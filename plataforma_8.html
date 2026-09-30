@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Preparatoria 8 meses | INSTITUTO MC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; background-color: var(--light); }
+        
+        .plataforma-container { min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .plataforma-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 18px 25px; display: flex; align-items: center;
+            justify-content: space-between; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap; gap: 15px;
+        }
+        .header-info { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .alumno-info { display: flex; flex-direction: column; font-size: 14px; }
+        .alumno-info strong { font-size: 16px; }
+        .alumno-info small { opacity: 0.85; font-size: 12px; }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2); color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 18px;
+            border-radius: 6px; font-weight: 500; cursor: pointer; transition: var(--transition);
+        }
+        .logout-btn:hover { background-color: rgba(255, 255, 255, 0.3); }
+        
+        .plataforma-body { flex: 1; display: grid; grid-template-columns: 280px 1fr; gap: 0; }
+        @media (max-width: 900px) { .plataforma-body { grid-template-columns: 1fr; } }
+        
+        .sidebar {
+            background-color: white; border-right: 1px solid #eee; padding: 25px 20px;
+            overflow-y: auto; max-height: calc(100vh - 80px);
+        }
+        @media (max-width: 900px) { .sidebar { max-height: none; border-right: none; border-bottom: 1px solid #eee; } }
+        
+        .progress-container { text-align: center; margin-bottom: 30px; }
+        .progress-circle { position: relative; width: 140px; height: 140px; margin: 0 auto 15px; }
+        .progress-circle svg { transform: rotate(-90deg); width: 140px; height: 140px; }
+        .progress-circle .bg { fill: none; stroke: #e9ecef; stroke-width: 10; }
+        .progress-circle .progress-bar {
+            fill: none; stroke: var(--primary); stroke-width: 10;
+            stroke-linecap: round; stroke-dasharray: 377; stroke-dashoffset: 377;
+            transition: stroke-dashoffset 1s ease;
+        }
+        .progress-circle .progress-text {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); text-align: center;
+        }
+        .progress-circle .progress-percent { font-size: 32px; font-weight: 700; color: var(--primary); line-height: 1; }
+        .progress-circle .progress-label { font-size: 12px; color: var(--gray); margin-top: 4px; }
+        .progress-title { font-size: 16px; font-weight: 600; color: var(--dark); margin-bottom: 5px; }
+        .progress-subtitle { font-size: 13px; color: var(--gray); }
+        
+        .materias-title {
+            font-size: 13px; font-weight: 700; color: var(--gray); text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 12px; padding-top: 20px; border-top: 1px solid #eee;
+        }
+        .materia-btn {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 12px 15px; background-color: transparent; border: none;
+            border-radius: 8px; cursor: pointer; transition: var(--transition);
+            text-align: left; font-size: 14px; color: var(--dark); font-weight: 500;
+            margin-bottom: 4px; position: relative;
+        }
+        .materia-btn:hover { background-color: var(--light); }
+        .materia-btn.active { background-color: var(--primary); color: white; }
+        .materia-btn .materia-icon { font-size: 18px; width: 24px; text-align: center; }
+        .materia-btn .materia-name { flex: 1; }
+        .materia-btn .materia-progress {
+            font-size: 11px; background-color: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px; border-radius: 10px; font-weight: 600;
+        }
+        .materia-btn.active .materia-progress { background-color: rgba(255, 255, 255, 0.25); }
+        .materia-btn .materia-progress.completed { background-color: #198754; color: white; }
+        
+        .main-content { padding: 30px 35px; overflow-y: auto; max-height: calc(100vh - 80px); }
+        @media (max-width: 900px) { .main-content { max-height: none; padding: 20px; } }
+        
+        .welcome-box {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 35px; border-radius: var(--border-radius); margin-bottom: 30px;
+        }
+        .welcome-box h1 { font-size: 26px; margin-bottom: 10px; }
+        .welcome-box p { opacity: 0.95; font-size: 15px; }
+        
+        .materia-header {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 25px;
+            padding-bottom: 20px; border-bottom: 2px solid #eee;
+        }
+        .materia-header-icon { font-size: 42px; }
+        .materia-header-text h2 { font-size: 24px; color: var(--dark); margin-bottom: 4px; }
+        .materia-header-text p { color: var(--gray); font-size: 14px; }
+        
+        .actividades-lista { display: flex; flex-direction: column; gap: 15px; }
+        .actividad-card {
+            background-color: white; border-radius: var(--border-radius);
+            padding: 22px 25px; box-shadow: var(--box-shadow);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 20px; transition: var(--transition); border-left: 5px solid #ddd; cursor: pointer;
+        }
+        .actividad-card:hover { box-shadow: var(--box-shadow-hover); transform: translateY(-2px); }
+        .actividad-card.completada { border-left-color: #198754; background-color: #f0fff4; }
+        .actividad-card.pendiente { border-left-color: var(--primary); }
+        
+        .actividad-info { flex: 1; }
+        .actividad-titulo { font-size: 17px; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+        .actividad-meta { font-size: 13px; color: var(--gray); display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        
+        .badge-completada, .badge-calificacion {
+            font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; white-space: nowrap;
+        }
+        .badge-completada { background-color: #198754; color: white; }
+        .badge-calificacion { background-color: #e9ecef; color: #495057; font-size: 12px; }
+        
+        .actividad-btn {
+            padding: 10px 20px; background-color: var(--primary); color: white;
+            border: none; border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: var(--transition); white-space: nowrap; font-size: 14px;
+        }
+        .actividad-btn:hover { background-color: var(--primary-dark); }
+        
+        .actividad-detalle {
+            background-color: white; border-radius: var(--border-radius);
+            padding: 35px; box-shadow: var(--box-shadow);
+        }
+        .back-btn {
+            background: none; border: none; color: var(--primary); font-size: 14px;
+            cursor: pointer; padding: 5px 0; margin-bottom: 20px; font-weight: 500;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .back-btn:hover { text-decoration: underline; }
+        
+        .detalle-titulo {
+            font-size: 26px; color: var(--dark); margin-bottom: 25px;
+            padding-bottom: 15px; border-bottom: 2px solid #eee;
+        }
+        
+        .detalle-seccion {
+            margin-bottom: 25px; padding: 20px; border-radius: 10px; background-color: var(--light);
+        }
+        .detalle-seccion h3 {
+            font-size: 16px; color: var(--primary); margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .detalle-seccion p {
+            color: var(--dark); line-height: 1.7; font-size: 15px; white-space: pre-line;
+        }
+        .detalle-seccion.ejemplo { background-color: #fff9e6; border-left: 4px solid #ffc107; }
+        
+        .preguntas-container { margin-top: 30px; }
+        .preguntas-titulo {
+            font-size: 18px; color: var(--dark); margin-bottom: 20px;
+            padding-bottom: 10px; border-bottom: 2px solid var(--primary);
+        }
+        
+        .pregunta {
+            background-color: white; border: 1px solid #e0e0e0;
+            border-radius: 10px; padding: 22px; margin-bottom: 18px;
+        }
+        .pregunta-numero {
+            font-size: 13px; color: var(--primary); font-weight: 700;
+            text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;
+        }
+        .pregunta-texto {
+            font-size: 16px; color: var(--dark); margin-bottom: 18px;
+            font-weight: 500; line-height: 1.5;
+        }
+        
+        .opciones { display: flex; flex-direction: column; gap: 10px; }
+        .opcion {
+            display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+            border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;
+            transition: var(--transition); background-color: white; font-size: 15px;
+        }
+        .opcion:hover { border-color: var(--primary); background-color: rgba(10, 60, 255, 0.03); }
+        .opcion.selected {
+            border-color: var(--primary); background-color: rgba(10, 60, 255, 0.08); font-weight: 500;
+        }
+        .opcion input[type="radio"] {
+            width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;
+        }
+        .opcion-letra { font-weight: 700; color: var(--primary); min-width: 20px; }
+        
+        .enviar-container {
+            margin-top: 30px; padding-top: 25px; border-top: 2px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px;
+        }
+        .enviar-info { font-size: 14px; color: var(--gray); }
+        .enviar-btn {
+            padding: 14px 35px; background-color: var(--primary); color: white;
+            border: none; border-radius: 10px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+        }
+        .enviar-btn:hover:not(:disabled) {
+            background-color: var(--primary-dark); transform: translateY(-2px);
+            box-shadow: var(--box-shadow-hover);
+        }
+        .enviar-btn:disabled { background-color: #6c757d; cursor: not-allowed; transform: none; }
+        
+        .resultado-box {
+            background: linear-gradient(135deg, #198754, #20c997);
+            color: white; padding: 35px; border-radius: var(--border-radius);
+            text-align: center; margin-bottom: 25px;
+        }
+        .resultado-box h2 { font-size: 24px; margin-bottom: 15px; }
+        .resultado-calificacion { font-size: 56px; font-weight: 700; margin: 15px 0; line-height: 1; }
+        .resultado-detalle { font-size: 15px; opacity: 0.95; }
+        
+        .revision-pregunta {
+            background-color: white; border-radius: 10px; padding: 20px;
+            margin-bottom: 15px; border-left: 5px solid #ddd;
+        }
+        .revision-pregunta.correcta { border-left-color: #198754; background-color: #f0fff4; }
+        .revision-pregunta.incorrecta { border-left-color: #dc3545; background-color: #fff5f5; }
+        .revision-texto { font-weight: 600; margin-bottom: 10px; color: var(--dark); }
+        .revision-respuesta { font-size: 14px; margin-bottom: 5px; }
+        .revision-respuesta.correcta { color: #198754; font-weight: 500; }
+        .revision-respuesta.incorrecta { color: #dc3545; font-weight: 500; }
+        
+        .sin-actividades {
+            text-align: center; padding: 50px 20px; color: var(--gray);
+            background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow);
+        }
+        .sin-actividades .icono { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
+        
+        .materia-completada-banner {
+            background-color: #d4edda; color: #155724; padding: 15px 20px;
+            border-radius: 10px; margin-bottom: 20px; display: flex;
+            align-items: center; gap: 10px; font-weight: 500;
+        }
+        
+        .aviso-revision {
+            background-color: #fff3cd; color: #856404; padding: 15px 20px;
+            border-radius: 10px; margin-top: 20px; display: flex;
+            align-items: center; gap: 10px; font-weight: 500; border-left: 4px solid #ffc107;
+        }
+        /* ============ AVATAR EMOJI ============ */
+.avatar-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-btn {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    line-height: 1;
+    color: white;
+    flex-shrink: 0;
+}
+
+.avatar-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: white;
+    transform: scale(1.08);
+}
+
+.avatar-btn .edit-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: #198754;
+    color: white;
+    font-size: 11px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.emoji-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.emoji-modal-overlay.show {
+    display: flex;
+}
+
+.emoji-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.emoji-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 5px;
+}
+
+.emoji-modal-subtitle {
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 18px;
+}
+
+.emoji-categoria-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 12px 0 8px;
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+}
+
+.emoji-option {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: transparent;
+    border: 2px solid transparent;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.emoji-option:hover {
+    background: #eef2ff;
+    transform: scale(1.1);
+}
+
+.emoji-option.selected {
+    background: #d1ecf1;
+    border-color: var(--primary);
+}
+
+.emoji-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.emoji-modal-actions button {
+    padding: 10px 20px;
+    background: var(--light);
+    color: var(--dark);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+/* ============ BIBLIOTECA DE RECURSOS ============ */
+.biblioteca-section {
+    margin-top: 30px;
+}
+
+.biblioteca-title {
+    font-size: 22px;
+    color: var(--dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.biblioteca-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.recurso-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recurso-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary);
+}
+
+.recurso-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.recurso-card-icon {
+    font-size: 36px;
+    flex-shrink: 0;
+}
+
+.recurso-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.3;
+    margin-bottom: 5px;
+}
+
+.recurso-card-materia {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+    background: var(--light);
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+.recurso-card-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.5;
+    flex: 1;
+}
+
+.recurso-card-btn {
+    padding: 10px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.recurso-card-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+    </style>
+</head>
+<body>
+    <div class="plataforma-container">
+        <header class="plataforma-header">
+            <div class="header-info">
+                <div class="logo-container" style="margin-bottom: 0;">
+                    <div class="logo-text" style="color: white; font-size: 20px;">INSTITUTO MC</div>
+                </div>
+                <div class="avatar-container">
+                    <button class="avatar-btn" id="avatarBtn" onclick="abrirSelectorEmoji()" title="Cambiar mi avatar">
+                        <span id="avatarEmoji">👤</span>
+                        <span class="edit-icon">✏️</span>
+                    </button>
+                    <div class="alumno-info">
+                        <strong id="nombreAlumno">Cargando...</strong>
+                        <small id="infoAlumno"></small>
+                    </div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </header>
+        
+        <!-- Modal Selector de Emojis -->
+        <div class="emoji-modal-overlay" id="emojiModal">
+            <div class="emoji-modal">
+                <h3 class="emoji-modal-title">🎨 Elige tu avatar</h3>
+                <p class="emoji-modal-subtitle">Selecciona un emoji para tu perfil</p>
+                
+                <div class="emoji-categoria-title">😊 Caritas</div>
+                <div class="emoji-grid" id="gridCaritas"></div>
+                
+                <div class="emoji-categoria-title">🐶 Animales</div>
+                <div class="emoji-grid" id="gridAnimales"></div>
+                
+                <div class="emoji-categoria-title">⚽ Deportes</div>
+                <div class="emoji-grid" id="gridDeportes"></div>
+                
+                <div class="emoji-categoria-title">🚀 Objetos</div>
+                <div class="emoji-grid" id="gridObjetos"></div>
+                
+                <div class="emoji-modal-actions">
+                    <button onclick="cerrarSelectorEmoji()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="plataforma-body">
+            <aside class="sidebar">
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <svg viewBox="0 0 140 140">
+                            <circle class="bg" cx="70" cy="70" r="60"></circle>
+                            <circle class="progress-bar" id="progressBar" cx="70" cy="70" r="60"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <div class="progress-percent" id="progressPercent">0%</div>
+                            <div class="progress-label">Completado</div>
+                        </div>
+                    </div>
+                    <div class="progress-title">Tu progreso</div>
+                    <div class="progress-subtitle" id="progressSubtitle">0 de 0 actividades</div>
+                </div>
+                
+                <div class="materias-title">📚 Materias</div>
+                <div id="materiasList"></div>
+            </aside>
+            
+            <main class="main-content" id="mainContent">
+                <div class="welcome-box">
+                    <h1>¡Bienvenido/a! 👋</h1>
+                    <p>Selecciona una materia del menú lateral para comenzar a trabajar en tus actividades.</p>
+                </div>
+                
+                <!-- ============ BIBLIOTECA DE RECURSOS ============ -->
+                <div class="biblioteca-section">
+                    <h2 class="biblioteca-title">📚 Biblioteca de Recursos</h2>
+                    <div class="biblioteca-grid">
+                        
+                        <!-- ====== RECURSO 1 ====== -->
+                        <div class="recurso-card">
+                            <div class="recurso-card-header">
+                                <div class="recurso-card-icon">📄</div>
+                                <div style="flex: 1;">
+                                    <div class="recurso-card-title">Título del PDF 1</div>
+                                    <span class="recurso-card-materia">📖 Español</span>
+                                </div>
+                            </div>
+                            <div class="recurso-card-desc">
+                                Descripción breve del material de apoyo.
+                            </div>
+                            <a href="PEGAR_AQUI_EL_LINK_DEL_PDF" target="_blank" class="recurso-card-btn">
+                                📂 Abrir PDF
+                            </a>
+                        </div>
+                        
+                        <!-- ====== RECURSO 2 ====== -->
+                        <div class="recurso-card">
+                            <div class="recurso-card-header">
+                                <div class="recurso-card-icon">📄</div>
+                                <div style="flex: 1;">
+                                    <div class="recurso-card-title">Título del PDF 2</div>
+                                    <span class="recurso-card-materia">🔢 Matemáticas</span>
+                                </div>
+                            </div>
+                            <div class="recurso-card-desc">
+                                Descripción breve del material de apoyo.
+                            </div>
+                            <a href="PEGAR_AQUI_EL_LINK_DEL_PDF" target="_blank" class="recurso-card-btn">
+                                📂 Abrir PDF
+                            </a>
+                        </div>
+                        
+                        <!-- ====== RECURSO 3 ====== -->
+                        <div class="recurso-card">
+                            <div class="recurso-card-header">
+                                <div class="recurso-card-icon">📄</div>
+                                <div style="flex: 1;">
+                                    <div class="recurso-card-title">Título del PDF 3</div>
+                                    <span class="recurso-card-materia">🏛️ Historia</span>
+                                </div>
+                            </div>
+                            <div class="recurso-card-desc">
+                                Descripción breve del material de apoyo.
+                            </div>
+                            <a href="PEGAR_AQUI_EL_LINK_DEL_PDF" target="_blank" class="recurso-card-btn">
+                                📂 Abrir PDF
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ==================== FIREBASE ====================
+        firebase.initializeApp({
+            apiKey: "AIzaSyBd8VEqwpRCytHpmPTOGAn7vfJVpZknpbg",
+            authDomain: "inscripciones-bbaf3.firebaseapp.com",
+            projectId: "inscripciones-bbaf3"
+        });
+
+        const db = firebase.firestore();
+
+        // ==================== CONFIGURACIÓN ====================
+        const PROGRAMA = "prep_8";
+        const PROGRAMA_NOMBRE = "Preparatoria 8 meses";
+
+        // ==================== DATOS DEL ALUMNO ====================
+        const alumnoId = localStorage.getItem("alumnoId");
+        const nombre = localStorage.getItem("nombre");
+        const sucursal = localStorage.getItem("sucursal");
+        const sucursalNombre = localStorage.getItem("sucursalNombre");
+
+        if (!alumnoId || !nombre) {
+            location.href = "index.html";
+        }
+
+        document.getElementById('nombreAlumno').textContent = nombre;
+        document.getElementById('infoAlumno').textContent = `${sucursalNombre || ''} · ${PROGRAMA_NOMBRE}`;
+
+        // ==================== MATERIAS ====================
+        const materias = [
+            { id: "espanol", nombre: "Español", icono: "📖" },
+            { id: "matematicas", nombre: "Matemáticas", icono: "🔢" },
+            { id: "historia", nombre: "Historia", icono: "🏛️" },
+            { id: "geografia", nombre: "Geografía", icono: "🌎" },
+            { id: "quimica", nombre: "Química", icono: "⚗️" },
+            { id: "fisica", nombre: "Física", icono: "⚛️" },
+            { id: "ingles", nombre: "Inglés", icono: "🇬🇧" }
+        ];
+
+        // ==================== ACTIVIDADES (34) ====================
+        const ACTIVIDADES = [
+            // ============ ESPAÑOL (5) ============
+            {
+                id: "esp_1", materia: "espanol", orden: 1,
+                titulo: "Textos funcionales",
+                objetivo: "Identificar las características y propósitos de los textos funcionales escolares y laborales.",
+                explicacion: "Los textos funcionales se producen con un propósito específico: informar, solicitar, acreditar o facilitar una acción.\n\n• Escolares: facilitan el aprendizaje (mapa conceptual, cuadro sinóptico).\n• Personales: expresan la voz del autor (carta, diario).\n• Laborales: gestionan trámites (oficio, currículum).\n• Sociales: cumplen función pública (carta poder).\n\nSu principal característica es atraer la atención del destinatario de manera precisa y clara.",
+                instrucciones: "Lee cuidadosamente y selecciona la respuesta correcta.",
+                ejemplo: "Un mapa conceptual es un texto funcional ESCOLAR.",
+                preguntas: [
+                    { pregunta: "¿Cuál NO designa un tipo de texto funcional?", opciones: ["Texto escolar", "Texto personal", "Texto laboral", "Texto recreativo"], correcta: 3 },
+                    { pregunta: "Característica principal de los textos funcionales:", opciones: ["Atraer la atención del destinatario de manera precisa y clara", "Tratar situaciones particulares", "Divertir y entretener", "Convencer sobre una idea"], correcta: 0 },
+                    { pregunta: "Propósito de los textos funcionales escolares:", opciones: ["Facilitar la adquisición de un aprendizaje", "Elaborar un plan de estudio", "Acreditar el trabajo del ciclo escolar", "Compartir investigaciones"], correcta: 0 },
+                    { pregunta: "¿Cuál es un texto funcional escolar?", opciones: ["Carta poder", "Currículum vitae", "Mapa conceptual", "Solicitud de empleo"], correcta: 2 }
+                ]
+            },
+            {
+                id: "esp_2", materia: "espanol", orden: 2,
+                titulo: "Funciones del lenguaje",
+                objetivo: "Reconocer las funciones del lenguaje en textos cotidianos.",
+                explicacion: "FUNCIONES:\n• Referencial: informa.\n• Apelativa: persuade.\n• Emotiva: expresa sentimientos.\n• Fática: mantiene comunicación.\n• Metalingüística: habla del lenguaje.\n• Poética: cuida la forma.",
+                instrucciones: "Selecciona la opción correcta.",
+                ejemplo: "En '¡no te acerques!' la función es APELATIVA.",
+                preguntas: [
+                    { pregunta: "Función en 'si ves un cable, ¡no te acerques!':", opciones: ["Referencial", "Metalingüística", "Apelativa", "Emotiva"], correcta: 2 },
+                    { pregunta: "Función común en textos persuasivos:", opciones: ["Referencial", "Fática", "Apelativa", "Metalingüística"], correcta: 2 },
+                    { pregunta: "Atractivo visual y fuerza emotiva son características de:", opciones: ["La caricatura política", "El artículo de opinión", "El guion teatral", "El anuncio publicitario"], correcta: 3 },
+                    { pregunta: "La función del _____ es vender productos:", opciones: ["Anuncio publicitario", "Anuncio propagandístico", "Artículo de opinión", "Guion teatral"], correcta: 0 }
+                ]
+            },
+            {
+                id: "esp_3", materia: "espanol", orden: 3,
+                titulo: "Esquemas gráficos",
+                objetivo: "Diferenciar cuadros sinópticos, mapas conceptuales y mapas mentales.",
+                explicacion: "• CUADRO SINÓPTICO: llaves, jerarquías horizontales.\n• MAPA CONCEPTUAL: conceptos en figuras geométricas con palabras enlace.\n• MAPA MENTAL: tema central con ramas radiales e imágenes.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "El MAPA MENTAL tiene ramas radiales con imágenes.",
+                preguntas: [
+                    { pregunta: "El _____ es un esquema con proposiciones con conceptos y palabras enlace:", opciones: ["Cuadro sinóptico", "Currículum vitae", "Mapa conceptual", "Mapa mental"], correcta: 2 },
+                    { pregunta: "Esquema con categorías horizontales y llaves:", opciones: ["Mapa mental", "Mapa conceptual", "Cuadro sinóptico", "Resumen"], correcta: 2 },
+                    { pregunta: "Representación con palabras en figuras geométricas:", opciones: ["Mapa mental", "Mapa conceptual", "Cuadro sinóptico", "Lluvia de ideas"], correcta: 1 },
+                    { pregunta: "El tema central está en el centro con ramas radiales:", opciones: ["Mapa mental", "Mapa conceptual", "Cuadro sinóptico", "Resumen"], correcta: 0 }
+                ]
+            },
+            {
+                id: "esp_4", materia: "espanol", orden: 4,
+                titulo: "Acentuación",
+                objetivo: "Clasificar palabras según su acentuación.",
+                explicacion: "• Agudas: última sílaba (violín).\n• Graves: penúltima sílaba (aéreo).\n• Esdrújulas: antepenúltima sílaba (triángulo).\n• Sobreesdrújulas: anterior a la antepenúltima.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "'Triángulo' es ESDRÚJULA.",
+                preguntas: [
+                    { pregunta: "'violín' y 'ciempiés' son:", opciones: ["Agudas", "Graves", "Esdrújulas", "Sobreesdrújulas"], correcta: 0 },
+                    { pregunta: "'triángulo' y 'aéreo' son:", opciones: ["Agudas", "Graves", "Esdrújulas", "Sobreesdrújulas"], correcta: 2 },
+                    { pregunta: "Sinónimo de 'apertura':", opciones: ["Clausura", "Inauguración", "Cerrar", "Censurado"], correcta: 1 },
+                    { pregunta: "Antónimo de 'mal':", opciones: ["Amor", "Bondad", "Bien", "Positivo"], correcta: 2 }
+                ]
+            },
+            {
+                id: "esp_5", materia: "espanol", orden: 5,
+                titulo: "Signos de puntuación y TIC's",
+                objetivo: "Identificar signos de puntuación y el uso de TIC's.",
+                explicacion: "SIGNOS DE PUNTUACIÓN:\n• Paréntesis: aclaran información.\n• Comillas: citan textualmente.\n• Interrogación: preguntas.\n• Admiración: énfasis.\n\nTIC's: herramientas de hardware y software para comunicación y procesamiento de información.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "Los PARÉNTESIS abren y cierran expresiones aclaratorias.",
+                preguntas: [
+                    { pregunta: "Signos para expresiones aclaratorias:", opciones: ["Paréntesis", "Interrogación", "Admiración", "Comillas"], correcta: 0 },
+                    { pregunta: "Las TIC's son conjunto de herramientas de:", opciones: ["Conocimiento", "Información", "Habilidades", "Destrezas"], correcta: 1 },
+                    { pregunta: "La lectura dinámica se realiza:", opciones: ["Rápidamente sin descuidar comprensión", "Rápidamente sin respetar signos", "Muy lentamente", "Rápidamente sin comprender"], correcta: 0 },
+                    { pregunta: "Las TIC's permiten la comunicación y:", opciones: ["Solo entretener", "Búsqueda, procesamiento y transmisión de información", "Solo almacenar", "Solo imprimir"], correcta: 1 }
+                ]
+            },
+
+            // ============ MATEMÁTICAS (5) ============
+            {
+                id: "mat_1", materia: "matematicas", orden: 1,
+                titulo: "Números racionales e irracionales",
+                objetivo: "Distinguir números racionales, irracionales y primos.",
+                explicacion: "• RACIONALES: fracción a/b.\n• IRRACIONALES: decimal infinito no periódico.\n• PRIMOS: solo divisibles por 1 y sí mismos.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "√2 es IRRACIONAL. 3.9 es RACIONAL.",
+                preguntas: [
+                    { pregunta: "Los números con decimal infinito no periódico son:", opciones: ["Racionales", "Enteros", "Irracionales", "Primos"], correcta: 2 },
+                    { pregunta: "¿Cuál es racional?", opciones: ["π", "e", "3.9", "√2"], correcta: 2 },
+                    { pregunta: "¿Cuál NO es racional?", opciones: ["1/3", "√2", "√16", "10"], correcta: 1 },
+                    { pregunta: "¿Cuáles son primos de 1, 3, 7, 12, 18, 49?", opciones: ["12 y 18", "1, 3, 7 y 49", "1, 3 y 7", "3 y 7"], correcta: 3 },
+                    { pregunta: "Múltiplos positivos de 3:", opciones: ["{3, 6, 9, 12, 15, ...}", "{3, 9, 27, 81, ...}", "{3, -3, -6, -9, ...}", "{-3, 3, 6, 9, ...}"], correcta: 0 }
+                ]
+            },
+            {
+                id: "mat_2", materia: "matematicas", orden: 2,
+                titulo: "Factorización y múltiplos",
+                objetivo: "Aplicar descomposición factorial y múltiplos.",
+                explicacion: "DESCOMPOSICIÓN FACTORIAL:\n• 315 = 3×3×5×7\n• 600 = 2×2×2×3×5×5",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "315 = 3 × 3 × 5 × 7",
+                preguntas: [
+                    { pregunta: "Descomposición factorial de 315:", opciones: ["3×3×45", "3×3×5×7", "9×45", "3×15×7"], correcta: 1 },
+                    { pregunta: "Descomposición factorial de 600:", opciones: ["2×2×2×3×5×5", "24×25", "8×3×5×5", "10×60"], correcta: 0 },
+                    { pregunta: "Deportista con 3/4, 4/5 y 7/8 de pista. Total:", opciones: ["5/24", "17/40", "7/12", "5 1/4"], correcta: 1 },
+                    { pregunta: "Medicamentos cada 6, 8 y 5 horas. Coinciden cada:", opciones: ["60 horas", "240 horas", "150 horas", "120 horas"], correcta: 3 }
+                ]
+            },
+            {
+                id: "mat_3", materia: "matematicas", orden: 3,
+                titulo: "Aritmética aplicada",
+                objetivo: "Resolver problemas aplicando jerarquía y ley de signos.",
+                explicacion: "JERARQUÍA (PEMDAS).\nLEY DE SIGNOS:\n• (+)(+) = + • (-)(-) = +\n• (+)(-) = - • (-)(+) = -\n(-4)⁴ = 256",
+                instrucciones: "Resuelve cada problema.",
+                ejemplo: "9 - 5[3+3(5-7)] + 6[4(6-7)+5] = 30",
+                preguntas: [
+                    { pregunta: "Gastos $5,500 + $4,700 + $3,000 + $4,000 de $20,000:", opciones: ["$5,100", "$2,800", "$1,500", "$1,430"], correcta: 1 },
+                    { pregunta: "Teatro 3 veces/mes con $60 + $120 + $300:", opciones: ["$1,044", "$1,440", "$1,140", "$1,404"], correcta: 1 },
+                    { pregunta: "9 - 5[3+3(5-7)] + 6[4(6-7)+5]:", opciones: ["30", "-30", "18", "-18"], correcta: 0 },
+                    { pregunta: "Suma de -6 y -13 por 5:", opciones: ["-95", "65", "-475", "475"], correcta: 0 },
+                    { pregunta: "(-4)⁴ =", opciones: ["196", "256", "316", "9426"], correcta: 1 },
+                    { pregunta: "(3⁴)(3⁵)(1/9):", opciones: ["3√3", "√3¹³", "3", "3⁷"], correcta: 3 }
+                ]
+            },
+            {
+                id: "mat_4", materia: "matematicas", orden: 4,
+                titulo: "Álgebra y polinomios",
+                objetivo: "Simplificar polinomios, desarrollar binomios y resolver ecuaciones.",
+                explicacion: "• Términos semejantes: 3ab + 5ab = 8ab\n• (a+b)² = a² + 2ab + b²\n• (a-b)² = a² - 2ab + b²\n• Ecuaciones: despejar incógnita.",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "(x+2)² = x² + 4x + 4",
+                preguntas: [
+                    { pregunta: "Simplifica 3ab + 2b + 5ab + 4ab - 7b:", opciones: ["12ab - 5b", "-3ab", "12ab + 5b", "3ab"], correcta: 0 },
+                    { pregunta: "(x-2)(x+5) =", opciones: ["x²+7x-10", "x²+3x+10", "x²-7x-10", "x²+3x-10"], correcta: 3 },
+                    { pregunta: "(x+2)² =", opciones: ["x²-4x+2", "x²-4", "x²+4x+4", "x²+4"], correcta: 2 },
+                    { pregunta: "(2x-4)² =", opciones: ["4x²-16x+16", "4x²-12x+16", "4x²-16x+8", "4x²-8x+8"], correcta: 0 },
+                    { pregunta: "x en -8x + 9 = -15:", opciones: ["x=-1", "x=1", "x=-3", "x=3"], correcta: 3 },
+                    { pregunta: "x en 10x - 3 = 3x + 2:", opciones: ["x=0", "x=-1", "x=1", "x=2"], correcta: 2 }
+                ]
+            },
+            {
+                id: "mat_5", materia: "matematicas", orden: 5,
+                titulo: "Sistemas de ecuaciones y funciones",
+                objetivo: "Resolver sistemas de ecuaciones lineales.",
+                explicacion: "SISTEMA DE ECUACIONES:\nSe pueden resolver por:\n• Sustitución\n• Igualación\n• Reducción\n\n2x - 3y = -4\n4x + 4y = 12",
+                instrucciones: "Resuelve los sistemas.",
+                ejemplo: "Si x=2, y=1:\n2(2)-3(1) = 4-3 = 1 ≠ -4\nPero el sistema tiene solución única.",
+                preguntas: [
+                    { pregunta: "Sistema 2x-3y=-4 y 4x+4y=12:", opciones: ["x=2; y=1", "x=2; y=-1", "x=1; y=2", "x=-1; y=-2"], correcta: 0 },
+                    { pregunta: "326 espectadores, $5 adultos y $2 niños, recaudado $1090. Adultos:", opciones: ["146 adultos y 180 niños", "126 adultos y 160 niños", "156 adultos y 196 niños", "166 adultos y 186 niños"], correcta: 0 },
+                    { pregunta: "¿Cuál es el 26% de 7800?", opciones: ["2289", "2028", "2048", "2038"], correcta: 1 },
+                    { pregunta: "Alejandro compra a $1,500 y quiere 15% de ganancia. Precio:", opciones: ["$1725", "$1,900", "$2,120", "$2,840"], correcta: 0 },
+                    { pregunta: "Interés de $30,000 al 8% anual por 3 años:", opciones: ["$10,425", "$9,100", "$7,200", "$6,905"], correcta: 2 }
+                ]
+            },
+
+            // ============ HISTORIA (5) ============
+            {
+                id: "his_1", materia: "historia", orden: 1,
+                titulo: "Prehistoria y primeras civilizaciones",
+                objetivo: "Identificar características de la Prehistoria.",
+                explicacion: "PREHISTORIA:\n• Paleolítico: caza, pesca, recolección. Fuego.\n• Neolítico: agricultura.\n\nCIVILIZACIONES:\n• Mesopotamia: cuneiforme.\n• Egipto: Nilo, pirámides.\n• Grecia: Atenas.\n• China: papel, Gran Muralla.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "El Paleolítico es el periodo MÁS LARGO.",
+                preguntas: [
+                    { pregunta: "¿Qué es la prehistoria?", opciones: ["Antes de la aparición del ser humano", "Antes de la invención de la escritura", "Era de los dinosaurios", "Formación de continentes"], correcta: 1 },
+                    { pregunta: "¿Cómo se divide la prehistoria?", opciones: ["Edad de piedra y media", "Paleolítico, Mesolítico y Neolítico", "Dinosaurios y hielo", "Antigua y metales"], correcta: 1 },
+                    { pregunta: "Fin de la prehistoria:", opciones: ["Invención del fuego", "Domesticación", "Invención de la escritura", "Primeros imperios"], correcta: 2 },
+                    { pregunta: "Civilización con escritura cuneiforme:", opciones: ["Egipto", "Mesopotamia", "Griega", "China"], correcta: 1 },
+                    { pregunta: "Río fundamental para Egipto:", opciones: ["Éufrates", "Ganges", "Tigris", "Nilo"], correcta: 3 },
+                    { pregunta: "Cuna de la democracia:", opciones: ["Roma", "Atenas", "Esparta", "Babilonia"], correcta: 1 }
+                ]
+            },
+            {
+                id: "his_2", materia: "historia", orden: 2,
+                titulo: "Grecia y Roma",
+                objetivo: "Identificar aportes de Grecia y Roma.",
+                explicacion: "GRECIA: democracia, filosofía.\nROMA: república e imperio.\nALEJANDRO MAGNO: imperio macedonio.\nFENICIOS: alfabeto.",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "El IMPERIO MACEDONIO alcanzó su máxima expansión con Alejandro Magno.",
+                preguntas: [
+                    { pregunta: "Imperio con máxima expansión con Alejandro Magno:", opciones: ["Romano", "Persa", "Otomano", "Macedonio"], correcta: 3 },
+                    { pregunta: "Civilización que inventó el papel:", opciones: ["China", "Egipto", "Mesopotamia", "India"], correcta: 0 },
+                    { pregunta: "Civilización con alfabeto influyente:", opciones: ["Fenicios", "Egipcios", "Romanos", "Hindúes"], correcta: 0 },
+                    { pregunta: "Civilización de la Gran Muralla:", opciones: ["Romana", "China", "Persa", "Babilónica"], correcta: 1 },
+                    { pregunta: "Periodos de la historia de Roma:", opciones: ["1", "2", "3", "4"], correcta: 2 },
+                    { pregunta: "Código legal más antiguo:", opciones: ["Leyes de Solón", "Ley de las Doce Tablas", "Código de Hammurabi", "Código de Justiniano"], correcta: 2 }
+                ]
+            },
+            {
+                id: "his_3", materia: "historia", orden: 3,
+                titulo: "Edad Media y Edad Moderna",
+                objetivo: "Comprender procesos de la Edad Media y Moderna.",
+                explicacion: "EDAD MEDIA (476-1492): feudalismo, vikingos, imprenta.\nEDAD MODERNA (1492-1789): Renacimiento, Reforma, Ilustración.",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "El FEUDALISMO predominó en la Edad Media.",
+                preguntas: [
+                    { pregunta: "Inicio de la Edad Media:", opciones: ["Caída de Roma Occidental", "Caída de Roma Oriental", "Coronación de Carlomagno", "Descubrimiento de América"], correcta: 0 },
+                    { pregunta: "Sistema económico y social de la Edad Media:", opciones: ["Capitalismo", "Feudalismo", "Mercantilismo", "Comunismo"], correcta: 1 },
+                    { pregunta: "Invento de finales de la Edad Media:", opciones: ["Brújula", "Imprenta", "Telescopio", "Astrolabio"], correcta: 1 },
+                    { pregunta: "Fin de la Edad Media:", opciones: ["Reforma Protestante", "Descubrimiento de América", "Caída de Constantinopla", "Imprenta"], correcta: 2 },
+                    { pregunta: "Filósofo de 'El Contrato Social':", opciones: ["Voltaire", "Locke", "Rousseau", "Montesquieu"], correcta: 2 },
+                    { pregunta: "Inicio de la Edad Contemporánea:", opciones: ["Revolución Francesa", "Independencia de EUA", "Revolución Industrial", "Primera Guerra Mundial"], correcta: 0 }
+                ]
+            },
+            {
+                id: "his_4", materia: "historia", orden: 4,
+                titulo: "México Prehispánico",
+                objetivo: "Identificar culturas mesoamericanas.",
+                explicacion: "• OLMECA: Cultura Madre.\n• MAYA: escritura jeroglífica.\n• ZAPOTECA: Monte Albán.\n• MEXICA: Tenochtitlán (1325), Triple Alianza.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "La cultura OLMECA es la Cultura Madre.",
+                preguntas: [
+                    { pregunta: "Civilización más antigua de Mesoamérica:", opciones: ["Tolteca", "Olmeca", "Azteca", "Maya"], correcta: 1 },
+                    { pregunta: "Cultura que construyó Monte Albán:", opciones: ["Olmeca", "Zapoteca", "Mixteca", "Mexica"], correcta: 1 },
+                    { pregunta: "Fundación de México-Tenochtitlán:", opciones: ["1200", "1325", "1428", "1519"], correcta: 1 },
+                    { pregunta: "Triple Alianza mexica:", opciones: ["Tenochtitlán, Texcoco y Tlaxcala", "Texcoco, Tenochtitlán y Coyoacán", "Texcoco, Tenochtitlán y Tlacopan", "Tenochtitlán, Tlaxcala y Chalco"], correcta: 2 },
+                    { pregunta: "Último tlatoani mexica:", opciones: ["Moctezuma II", "Cuitláhuac", "Cuauhtémoc", "Tlacaélel"], correcta: 2 },
+                    { pregunta: "Caída de México-Tenochtitlán:", opciones: ["1519", "1520", "1521", "1522"], correcta: 2 }
+                ]
+            },
+            {
+                id: "his_5", materia: "historia", orden: 5,
+                titulo: "Conquista y Colonia",
+                objetivo: "Comprender la Conquista y el periodo colonial.",
+                explicacion: "CONQUISTA:\n• 1519: Cortés en Veracruz.\n• 1521: cae Tenochtitlán.\n• La Malinche: intérprete.\n\nNUEVA ESPAÑA:\n• 1535: primer virreinato (Antonio de Mendoza).\n• 1539: primera imprenta.\n• Minería de plata.",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "Hernán Cortés llegó a Veracruz en 1519.",
+                preguntas: [
+                    { pregunta: "Hernán Cortés llegó a Veracruz en:", opciones: ["1502", "1519", "1521", "1530"], correcta: 1 },
+                    { pregunta: "Intérprete de Cortés:", opciones: ["Sor Juana", "Doña Marina (La Malinche)", "Cuauhtémoc", "Isabel Moctezuma"], correcta: 1 },
+                    { pregunta: "Primer virrey de Nueva España:", opciones: ["Hernán Cortés", "Luis de Velasco", "Antonio de Mendoza", "Martín Cortés"], correcta: 2 },
+                    { pregunta: "Mineral clave en la economía colonial:", opciones: ["Oro", "Hierro", "Plata", "Azogue"], correcta: 2 },
+                    { pregunta: "Primera imprenta en México:", opciones: ["1549", "1539", "1559", "1569"], correcta: 1 },
+                    { pregunta: "Precursor de la literatura mexicana:", opciones: ["Sor Juana Inés de la Cruz", "Juan Ruiz de Alarcón", "Carlos de Sigüenza y Góngora", "Bernardo de Balbuena"], correcta: 0 }
+                ]
+            },
+
+            // ============ GEOGRAFÍA (5) ============
+            {
+                id: "geo_1", materia: "geografia", orden: 1,
+                titulo: "El plano cartesiano",
+                objetivo: "Identificar elementos del plano cartesiano.",
+                explicacion: "• Eje X (horizontal) = ABSCISAS.\n• Eje Y (vertical) = ORDENADAS.\n• Cuadrantes: I(+,+), II(-,+), III(-,-), IV(+,-).",
+                instrucciones: "Responde correctamente.",
+                ejemplo: "A(-2,4) está en el SEGUNDO cuadrante.",
+                preguntas: [
+                    { pregunta: "Eje horizontal del plano cartesiano:", opciones: ["Eje de rotación", "Eje de las abscisas", "Eje de simetría", "Eje de las ordenadas"], correcta: 1 },
+                    { pregunta: "¿Cuadrante de A(-2,4)?", opciones: ["Primero", "Segundo", "Tercero", "Cuarto"], correcta: 1 },
+                    { pregunta: "La segunda coordenada se ubica en:", opciones: ["Eje z", "Eje y", "Eje x", "Eje cero"], correcta: 1 },
+                    { pregunta: "Pares ordenados se expresan como:", opciones: ["(x, y)", "(y, x)", "(a, b)", "(b, a)"], correcta: 0 }
+                ]
+            },
+            {
+                id: "geo_2", materia: "geografia", orden: 2,
+                titulo: "Distancias entre puntos",
+                objetivo: "Calcular distancias en el plano cartesiano.",
+                explicacion: "DISTANCIA:\nd = √[(x₂-x₁)² + (y₂-y₁)²]",
+                instrucciones: "Calcula la distancia.",
+                ejemplo: "A(-2,-4) y B(-6,7): d ≈ 11.70",
+                preguntas: [
+                    { pregunta: "Distancia A(-2,-4) y B(-6,7):", opciones: ["146 u", "12.08 u", "13.25 u", "11.25 u"], correcta: 1 },
+                    { pregunta: "Distancia A(-1,-3) y B(-5,6):", opciones: ["9.56 u", "6.7 u", "9.84 u", "5 u"], correcta: 2 },
+                    { pregunta: "Suma 17°14'39\" + 18°25'30\":", opciones: ["35°39'69\"", "35°29'59\"", "35°40'9\"", "35°40'90\""], correcta: 2 },
+                    { pregunta: "Suma de ángulos interiores de triángulo:", opciones: ["360°", "270°", "180°", "120°"], correcta: 2 }
+                ]
+            },
+            {
+                id: "geo_3", materia: "geografia", orden: 3,
+                titulo: "Rectas y triángulos",
+                objetivo: "Aplicar propiedades de rectas y triángulos.",
+                explicacion: "• Paralelas: nunca se cortan.\n• Perpendiculares: 90°.\n• Triángulos: 180°.\n• Pitágoras: a² + b² = c²",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "Con A=110° y B=25°, C = 45°.",
+                preguntas: [
+                    { pregunta: "Característica de rectas paralelas:", opciones: ["Siempre se cortan", "Se cortan a 90°", "Se cortan en cualquier punto", "Nunca se cortan"], correcta: 3 },
+                    { pregunta: "Característica de rectas perpendiculares:", opciones: ["Siempre se cortan", "Se cortan a 90°", "Se cortan en cualquier punto", "Nunca se cortan"], correcta: 1 },
+                    { pregunta: "Triángulo con A=110° y B=25°. C =", opciones: ["45°", "60°", "72°", "80°"], correcta: 0 },
+                    { pregunta: "Triángulo con B=42° y C=20°. A =", opciones: ["118°", "92°", "70°", "62°"], correcta: 0 }
+                ]
+            },
+            {
+                id: "geo_4", materia: "geografia", orden: 4,
+                titulo: "Geometría aplicada",
+                objetivo: "Aplicar Pitágoras y calcular áreas.",
+                explicacion: "• Pitágoras: c² = a² + b²\n• Área rectángulo: base × altura",
+                instrucciones: "Resuelve cada problema.",
+                ejemplo: "Catetos 7 y 24: c = √625 = 25 cm",
+                preguntas: [
+                    { pregunta: "Catetos 7 y 24. Hipotenusa:", opciones: ["25 cm", "28 cm", "31 cm", "45 cm"], correcta: 0 },
+                    { pregunta: "Área de rectángulo de 13 × 21 m:", opciones: ["322 m²", "350 m²", "299 m²", "273 m²"], correcta: 3 },
+                    { pregunta: "Ruedas radio 25 y 75 cm. Primera da 300 vueltas. Segunda:", opciones: ["150 vueltas", "100 vueltas", "94 vueltas", "78 vueltas"], correcta: 1 },
+                    { pregunta: "Lado a si b=30, c=40 (rectángulo):", opciones: ["95 cm", "85 cm", "70 cm", "50 cm"], correcta: 3 }
+                ]
+            },
+            {
+                id: "geo_5", materia: "geografia", orden: 5,
+                titulo: "Probabilidad y estadística",
+                objetivo: "Calcular probabilidad y medidas de tendencia central.",
+                explicacion: "PROBABILIDAD: casos favorables / casos totales.\n\nTENDENCIA CENTRAL:\n• Moda: valor más repetido.\n• Media: promedio.\n• Mediana: valor central.",
+                instrucciones: "Resuelve los ejercicios.",
+                ejemplo: "P(trébol) = 13/52 = 0.25",
+                preguntas: [
+                    { pregunta: "Grupo de 25 alumnos, 3/5 aprobaron, 10 son hombres. P(mujer):", opciones: ["60%", "50%", "35%", "33.3%"], correcta: 3 },
+                    { pregunta: "Folios del 0 al 5. P(termina en 4):", opciones: ["66.6%", "50%", "16.6%", "8%"], correcta: 2 },
+                    { pregunta: "Póquer 52 cartas. P(trébol):", opciones: ["0.16", "0.20", "0.25", "0.38"], correcta: 2 },
+                    { pregunta: "Promedios 60,60,90,70,100,60,80,100,70. Promedio:", opciones: ["76.6", "80", "75.6", "92"], correcta: 0 },
+                    { pregunta: "Moda de 35,40,30,32,38,31,35,31,40,38,39,30,35,32,40,35:", opciones: ["35", "38", "39", "40"], correcta: 0 },
+                    { pregunta: "Medidas de tendencia central:", opciones: ["Moda y mediana", "Moda, media y mediana", "Moda, varianza, media ponderada y media", "Varianza, desviación estándar y rango"], correcta: 1 }
+                ]
+            },
+
+            // ============ QUÍMICA (5) ============
+            {
+                id: "qui_1", materia: "quimica", orden: 1,
+                titulo: "Introducción a la química",
+                objetivo: "Comprender el objeto de estudio de la química.",
+                explicacion: "QUÍMICA: estudia la materia y sus transformaciones.\n\nRAMAS:\n• Inorgánica: sin carbono.\n• Orgánica: con carbono.\n• Técnica: producción económica.\n\nMÉTODO CIENTÍFICO:\nObservación → Hipótesis → Experimentación.",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "Mendeléyev clasificó la tabla periódica.",
+                preguntas: [
+                    { pregunta: "La química se define como:", opciones: ["Ciencia que estudia la materia y sus transformaciones", "Ciencia que estudia átomos", "Ciencia que estudia energía", "Ciencia que estudia naturaleza"], correcta: 0 },
+                    { pregunta: "Química _____ estudia compuestos sin carbono:", opciones: ["General", "Cuántica", "Orgánica", "Inorgánica"], correcta: 3 },
+                    { pregunta: "Paso del método científico que establece respuestas:", opciones: ["Hipótesis", "Pregunta", "Observación", "Identificación"], correcta: 0 },
+                    { pregunta: "Químico que clasificó la tabla periódica:", opciones: ["Arrhenius", "Mendeléyev", "Berzelius", "Newlands"], correcta: 1 },
+                    { pregunta: "Símbolo Hg:", opciones: ["Hidrógeno", "Mercurio", "Helio", "Argón"], correcta: 1 },
+                    { pregunta: "Símbolo Na:", opciones: ["Cloro", "Sodio", "Potasio", "Níquel"], correcta: 1 }
+                ]
+            },
+            {
+                id: "qui_2", materia: "quimica", orden: 2,
+                titulo: "Elementos, compuestos y mezclas",
+                objetivo: "Diferenciar elementos, compuestos y mezclas.",
+                explicacion: "• ELEMENTO: no se descompone.\n• COMPUESTO: 2+ elementos unidos.\n• MEZCLA HOMOGÉNEA: una fase.\n• MEZCLA HETEROGÉNEA: varias fases.",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "Agua = COMPUESTO. Bronce = MEZCLA HOMOGÉNEA.",
+                preguntas: [
+                    { pregunta: "El oxígeno es:", opciones: ["Mezcla homogénea", "Mezcla heterogénea", "Compuesto", "Elemento"], correcta: 3 },
+                    { pregunta: "El agua es:", opciones: ["Mezcla homogénea", "Mezcla heterogénea", "Compuesto", "Elemento"], correcta: 2 },
+                    { pregunta: "El bronce es:", opciones: ["Mezcla homogénea", "Mezcla heterogénea", "Compuesto", "Elemento"], correcta: 0 },
+                    { pregunta: "Elemento más abundante en el universo:", opciones: ["Hidrógeno", "Helio", "Carbono", "Oxígeno"], correcta: 0 },
+                    { pregunta: "Elemento más abundante en seres vivos:", opciones: ["Hidrógeno", "Helio", "Carbono", "Oxígeno"], correcta: 2 },
+                    { pregunta: "Litio, sodio, potasio son metales:", opciones: ["Alcalinos", "Alcalinotérreos", "Transición interna", "Transición"], correcta: 0 }
+                ]
+            },
+            {
+                id: "qui_3", materia: "quimica", orden: 3,
+                titulo: "Métodos de separación",
+                objetivo: "Identificar métodos de separación de mezclas.",
+                explicacion: "• DESTILACIÓN: líquidos miscibles.\n• DECANTACIÓN: líquidos inmiscibles.\n• FILTRACIÓN: sólido-líquido.\n• IMANTACIÓN: con imán.",
+                instrucciones: "Selecciona el método correcto.",
+                ejemplo: "Agua y aceite → DECANTACIÓN.",
+                preguntas: [
+                    { pregunta: "Líquidos miscibles:", opciones: ["Destilación", "Decantación", "Filtración", "Imantación"], correcta: 0 },
+                    { pregunta: "Líquidos inmiscibles:", opciones: ["Destilación", "Decantación", "Filtración", "Imantación"], correcta: 1 },
+                    { pregunta: "Hervir y condensar es:", opciones: ["Sublimación", "Filtración", "Destilación", "Centrifugación"], correcta: 2 },
+                    { pregunta: "¿Mezclar 2 gases da disolución?", opciones: ["Siempre", "A veces", "Nunca", "Depende"], correcta: 0 },
+                    { pregunta: "Disolución que ya no admite más soluto:", opciones: ["Saturada", "Concentrada", "Diluida", "Sobresaturada"], correcta: 0 }
+                ]
+            },
+            {
+                id: "qui_4", materia: "quimica", orden: 4,
+                titulo: "Cambios físicos y químicos",
+                objetivo: "Diferenciar cambios físicos y químicos.",
+                explicacion: "• FÍSICO: no cambia composición.\n• QUÍMICO: nuevas sustancias.\n• Densidades: Gas < Líquido < Sólido",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "Combustión = CAMBIO QUÍMICO.",
+                preguntas: [
+                    { pregunta: "Ennegrecimiento de monedas de cobre:", opciones: ["Físico", "Químico", "Bacteriológico", "Electroquímico"], correcta: 1 },
+                    { pregunta: "Combustión de gas:", opciones: ["Físico", "Químico", "Bacteriológico", "Electroquímico"], correcta: 1 },
+                    { pregunta: "Orden de menor a mayor densidad:", opciones: ["Sólido, líquido y gas", "Gas, sólido y líquido", "Gas, líquido y sólido", "Líquido, gas y sólido"], correcta: 2 },
+                    { pregunta: "Estado con forma propia:", opciones: ["Líquido", "Sólido", "Gaseoso", "Plasma"], correcta: 1 },
+                    { pregunta: "Cambio de sólido a líquido:", opciones: ["Ebullición", "Condensación", "Fusión", "Sublimación"], correcta: 2 },
+                    { pregunta: "Proceso exotérmico:", opciones: ["Emite calor", "Absorbe calor", "Emite y absorbe", "Congela agua"], correcta: 0 }
+                ]
+            },
+            {
+                id: "qui_5", materia: "quimica", orden: 5,
+                titulo: "Enlaces y reacciones químicas",
+                objetivo: "Identificar tipos de enlace y reacciones.",
+                explicacion: "ENLACES:\n• Iónico: metal + no metal.\n• Covalente: no metal + no metal.\n• Metálico: entre metales.\n\nMETALES: brillo, maleables, conductores.\n\nÁCIDOS CARBOXÍLICOS: -COOH\nALCOHOLES: -OH\nCETONAS: -CO\nHIDROCARBURO MÁS SIMPLE: Metano (CH₄)",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "Na₂O + agua → Hidróxido de sodio (NaOH).",
+                preguntas: [
+                    { pregunta: "Enlace metal + no metal:", opciones: ["Covalente no polar", "Covalente polar", "Metálico", "Iónico"], correcta: 3 },
+                    { pregunta: "Característica de metales:", opciones: ["No tienen brillo", "Brillo, maleables, conductores", "Forman cationes y no maleables", "Agentes oxidantes"], correcta: 1 },
+                    { pregunta: "Na₂O + agua produce:", opciones: ["Óxido de sodio", "Óxido de aluminio", "Hidróxido de sodio", "Peróxido de sodio"], correcta: 2 },
+                    { pregunta: "Elemento principal en compuestos orgánicos:", opciones: ["Oxígeno", "Carbono", "Nitrógeno", "Hidrógeno"], correcta: 1 },
+                    { pregunta: "Hidrocarburo más simple:", opciones: ["Etano", "Propano", "Butano", "Metano"], correcta: 3 },
+                    { pregunta: "Grupo funcional de alcoholes:", opciones: ["-CHO", "-COOH", "-OH", "-NH2"], correcta: 2 }
+                ]
+            },
+
+            // ============ FÍSICA (5) ============
+            {
+                id: "fis_1", materia: "fisica", orden: 1,
+                titulo: "Conceptos básicos y cinemática",
+                objetivo: "Aplicar fórmulas de cinemática.",
+                explicacion: "• a = (Vf - Vi) / t\n• Caída libre: t = √(2h/g)\n• g = 9.8 m/s²",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "a = (21-10)/5.5 = 2 m/s²",
+                preguntas: [
+                    { pregunta: "Ciencia que estudia energía, materia, tiempo y espacio:", opciones: ["Física", "Biología", "Química", "Matemática"], correcta: 0 },
+                    { pregunta: "Rama que estudia movimiento:", opciones: ["Mecánica", "Acústica", "Óptica", "Termodinámica"], correcta: 0 },
+                    { pregunta: "Aceleración es:", opciones: ["Tiempo por tiempo", "Cambio de velocidad por tiempo", "Distancia por tiempo", "Cambio de velocidad por longitud"], correcta: 1 },
+                    { pregunta: "Aceleración de 10 a 21 m/s en 5.5 s:", opciones: ["4 m/s²", "3 m/s²", "2.5 m/s²", "2 m/s²"], correcta: 3 },
+                    { pregunta: "Caída desde 150 m:", opciones: ["5.81 s", "5.23 s", "5 s", "5.52 s"], correcta: 3 }
+                ]
+            },
+            {
+                id: "fis_2", materia: "fisica", orden: 2,
+                titulo: "Leyes de Newton",
+                objetivo: "Aplicar las leyes de Newton.",
+                explicacion: "1. INERCIA.\n2. F = m · a\n3. ACCIÓN-REACCIÓN.",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "F = 40 × 2.1 = 84 N",
+                preguntas: [
+                    { pregunta: "Leyes de Newton:", opciones: ["Gravitación e inercia", "Inercia, cálculo y gravitación", "Inercia, dinámica y acción-reacción", "Cálculo y gravitación"], correcta: 2 },
+                    { pregunta: "Fuerza de 40 kg con a = 2.1 m/s²:", opciones: ["85 N", "84 N", "45 N", "35 N"], correcta: 1 },
+                    { pregunta: "Peso de 60 kg en Saturno (g = 10.44):", opciones: ["628.4 N", "626.4 N", "60 N", "600 N"], correcta: 1 },
+                    { pregunta: "Fuerza entre masas de 800 kg y 500 kg a 3 m:", opciones: ["2.964×10⁻⁶ N", "3.862×10⁻⁶ N", "7.666×10⁻⁶ N", "6.786×10⁻⁶ N"], correcta: 2 },
+                    { pregunta: "Fuerza entre 800 kg y 500 kg separadas 3 m:", opciones: ["2.964×10⁻⁶ N", "3.862×10⁻⁶ N", "7.666×10⁻⁶ N", "6.786×10⁻⁶ N"], correcta: 0 }
+                ]
+            },
+            {
+                id: "fis_3", materia: "fisica", orden: 3,
+                titulo: "Energía cinética y potencial",
+                objetivo: "Calcular energía cinética y potencial.",
+                explicacion: "• Ec = ½ m v²\n• Ep = m · g · h\n\nConservación: la energía se transforma.",
+                instrucciones: "Resuelve los ejercicios.",
+                ejemplo: "Ep = 600 × 9.8 × 25 = 147,000 J",
+                preguntas: [
+                    { pregunta: "Concepto de energía:", opciones: ["Capacidad para realizar un trabajo", "Capacidad para decidir", "Incapacidad para trabajar", "Fórmula empírica"], correcta: 0 },
+                    { pregunta: "Fórmula de energía cinética:", opciones: ["E=mc²", "E=mgh", "E=½mv²", "E=hmc"], correcta: 2 },
+                    { pregunta: "Energía potencial de 600 kg a 25 m:", opciones: ["24 J", "147,000 J", "147,150 J", "400 J"], correcta: 1 },
+                    { pregunta: "Masa con Ec=2800 J y v=20 m/s:", opciones: ["10 kg", "7 kg", "14 kg", "140 kg"], correcta: 2 },
+                    { pregunta: "Conservación de la energía:", opciones: ["Se crea o destruye", "No se crea ni destruye, se transforma", "Se crea bajo procesos físicos", "Se destruye bajo procesos químicos"], correcta: 1 }
+                ]
+            },
+            {
+                id: "fis_4", materia: "fisica", orden: 4,
+                titulo: "Electricidad y termodinámica",
+                objetivo: "Aplicar conceptos de electricidad.",
+                explicacion: "• TERMODINÁMICA: acción mecánica del calor.\n• ELECTRICIDAD: electrodinámica y electrostática.\n• V = I · R\n• K = °C + 273",
+                instrucciones: "Elige la respuesta correcta.",
+                ejemplo: "Caída de potencial = I × R",
+                preguntas: [
+                    { pregunta: "Convertir 64 °C a Kelvin:", opciones: ["337 K", "456 K", "273 K", "433 K"], correcta: 0 },
+                    { pregunta: "La _____ estudia la acción mecánica del calor:", opciones: ["Acústica", "Electromecánica", "Óptica", "Termodinámica"], correcta: 3 },
+                    { pregunta: "Ramas de la electricidad:", opciones: ["Electrodinámica y electricidad", "Primaria y secundaria", "Electrodinámica y electrostática", "Electromagnetismo y electricidad"], correcta: 2 },
+                    { pregunta: "Caída de potencial en 9 Ω con 15 A:", opciones: ["225 V", "343 V", "654 V", "45 V"], correcta: 0 },
+                    { pregunta: "Émbolo A₂=800 cm², A₁=12 cm², F₂=30,500 N. F₁:", opciones: ["527.4 N", "234.5 N", "457.5 N", "1232.4 N"], correcta: 2 }
+                ]
+            },
+            {
+                id: "fis_5", materia: "fisica", orden: 5,
+                titulo: "Densidad, presión y circuitos",
+                objetivo: "Aplicar conceptos de densidad, presión y circuitos.",
+                explicacion: "• DENSIDAD: masa / volumen.\n• PRESIÓN: fuerza / área. Inversamente proporcional al área.\n• TENSIÓN SUPERFICIAL: agua repele insectos.\n• Ley de Ohm: V = I · R\n• En serie: R_total = R₁+R₂+...",
+                instrucciones: "Selecciona la respuesta correcta.",
+                ejemplo: "En serie: R_total = 10+5+2+8+20 = 45 Ω. I = 90/45 = 2 A.",
+                preguntas: [
+                    { pregunta: "Cantidad de masa en un volumen:", opciones: ["Presión", "Viscosidad", "Tensión superficial", "Densidad"], correcta: 3 },
+                    { pregunta: "Propiedad que evita que mosquitos se hundan:", opciones: ["Salinidad", "Densidad", "Solidificación", "Tensión superficial"], correcta: 3 },
+                    { pregunta: "Presión es magnitud escalar para medir fuerza sobre:", opciones: ["Línea", "Superficie perpendicular", "Volumen", "Punto"], correcta: 1 },
+                    { pregunta: "Relación presión-área:", opciones: ["Inversamente proporcional", "Directamente proporcional", "Relativa", "Siempre menor"], correcta: 0 },
+                    { pregunta: "Corriente en circuito serie 90V con 10+5+2+8+20 Ω:", opciones: ["2 A", "4 A", "90 A", "45 A"], correcta: 0 },
+                    { pregunta: "Trabajo de 500 W en 0.25 s da potencia de:", opciones: ["2,000 W", "5,000 W", "125 W", "200 W"], correcta: 0 }
+                ]
+            },
+
+            // ============ INGLÉS (4) ============
+            {
+                id: "ing_1", materia: "ingles", orden: 1,
+                titulo: "Verb tenses",
+                objetivo: "Identify and use correctly the main verb tenses.",
+                explicacion: "PRESENT SIMPLE, PRESENT CONTINUOUS, PAST SIMPLE, PRESENT PERFECT, FUTURE.",
+                instrucciones: "Choose the correct answer.",
+                ejemplo: "I BOUGHT the CD yesterday.",
+                preguntas: [
+                    { pregunta: "'He _____ to his parents.'", opciones: ["not often writes", "doesn't often write", "don't often writes", "often writes"], correcta: 1 },
+                    { pregunta: "'Is Sam ready?' 'Yes, he _____ on his coat.'", opciones: ["put", "puts", "is put", "is putting"], correcta: 3 },
+                    { pregunta: "'Did you get anything yesterday?' 'Yes, I _____ the CD.'", opciones: ["buys", "bought", "am buying", "was buying"], correcta: 1 },
+                    { pregunta: "'He _____ her for years.'", opciones: ["know", "knows", "is knowing", "has known"], correcta: 3 },
+                    { pregunta: "'I expect _____ here soon.'", opciones: ["he", "he's", "he'll", "he'll be"], correcta: 3 },
+                    { pregunta: "Jack remembered to post the letter, _____?", opciones: ["does he", "do he", "didn't he", "didn't Jack remember"], correcta: 2 }
+                ]
+            },
+            {
+                id: "ing_2", materia: "ingles", orden: 2,
+                titulo: "Questions and articles",
+                objetivo: "Use question words and articles.",
+                explicacion: "• How many → countable\n• How much → uncountable\n• A → consonant\n• AN → vowel",
+                instrucciones: "Choose the correct answer.",
+                ejemplo: "How MUCH money? How MANY students?",
+                preguntas: [
+                    { pregunta: "_____ money did you spend?", opciones: ["How many", "How much", "How long", "How often"], correcta: 1 },
+                    { pregunta: "She is _____ honest person.", opciones: ["an", "a", "you", "the"], correcta: 0 },
+                    { pregunta: "My cousin is _____ police officer.", opciones: ["an", "a", "the", "—"], correcta: 1 },
+                    { pregunta: "I have three books. _____ books in the room.", opciones: ["there are", "there is", "It", "It is"], correcta: 0 },
+                    { pregunta: "_____ is your birthday?", opciones: ["When", "Whom", "What", "How"], correcta: 0 }
+                ]
+            },
+            {
+                id: "ing_3", materia: "ingles", orden: 3,
+                titulo: "Vocabulary and expressions",
+                objetivo: "Use vocabulary in everyday English.",
+                explicacion: "• Earn money\n• Look forward to\n• Shore / coast / bank\n• Wait / hold on",
+                instrucciones: "Choose the correct answer.",
+                ejemplo: "The word for land edge of a lake is SHORE.",
+                preguntas: [
+                    { pregunta: "He has started a new job. He _____ more money.", opciones: ["earns", "wins", "spends", "black"], correcta: 0 },
+                    { pregunta: "I'm really _____ the party.", opciones: ["waiting", "enjoying", "looking forward to", "night"], correcta: 2 },
+                    { pregunta: "The word for the land edge of a lake or sea is:", opciones: ["bank", "shore", "coast", "seat"], correcta: 1 },
+                    { pregunta: "_____ Gloria last week?", opciones: ["Have you seen", "Did you see", "Were you seeing", "Had you seen"], correcta: 1 },
+                    { pregunta: "Have you ever _____ in the North Pole?", opciones: ["be", "been", "did", "done"], correcta: 1 }
+                ]
+            },
+            {
+                id: "ing_4", materia: "ingles", orden: 4,
+                titulo: "Conditionals and modals",
+                objetivo: "Use conditionals and modals correctly.",
+                explicacion: "• SHOULD: recommendation\n• MUST: obligation\n• CAN: ability\n• COULD: past ability / possibility\n• If I won the lottery, I would buy a big house.",
+                instrucciones: "Choose the correct answer.",
+                ejemplo: "If I WON the lottery, I would BUY a big house.",
+                preguntas: [
+                    { pregunta: "Jane, do you think I _____ ask for a raise?", opciones: ["must", "can", "should", "could"], correcta: 2 },
+                    { pregunta: "You _____ see a doctor.", opciones: ["must", "can", "should", "could"], correcta: 2 },
+                    { pregunta: "I don't think John _____ go to London this year.", opciones: ["must", "can", "should", "could"], correcta: 2 },
+                    { pregunta: "If I _____ the lottery, I would _____ a big house.", opciones: ["win - buy", "won - bought", "won - buy", "win - bought"], correcta: 2 },
+                    { pregunta: "There is _____ bee in my room.", opciones: ["a", "an", "more", "much"], correcta: 0 }
+                ]
+            }
+        ];
+
+        // ==================== ESTADO ====================
+        let respuestas = [];
+        let materiaActual = null;
+        let actividadActual = null;
+        let respuestasTemporales = {};
+
+        // ==================== INICIALIZACIÓN ====================
+        async function inicializar() {
+            await cargarRespuestas();
+            renderizarMaterias();
+            actualizarProgreso();
+        }
+
+        function cargarRespuestas() {
+            return db.collection("respuestas")
+                .where("alumnoId", "==", alumnoId)
+                .where("programa", "==", PROGRAMA)
+                .get()
+                .then(snapshot => {
+                    respuestas = [];
+                    snapshot.forEach(doc => {
+                        respuestas.push({ id: doc.id, ...doc.data() });
+                    });
+                })
+                .catch(error => console.error("Error al cargar respuestas:", error));
+        }
+
+        // ==================== PROGRESO ====================
+        function actualizarProgreso() {
+            const total = ACTIVIDADES.length;
+            const completadas = respuestas.length;
+            const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
+            
+            const circle = document.getElementById('progressBar');
+            const circumference = 2 * Math.PI * 60;
+            const offset = circumference - (porcentaje / 100) * circumference;
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            document.getElementById('progressPercent').textContent = porcentaje + '%';
+            document.getElementById('progressSubtitle').textContent = `${completadas} de ${total} actividades`;
+        }
+
+        function calcularProgresoMateria(materiaId) {
+            const totalMateria = ACTIVIDADES.filter(a => a.materia === materiaId).length;
+            const completadasMateria = respuestas.filter(r => r.materia === materiaId).length;
+            return { total: totalMateria, completadas: completadasMateria };
+        }
+
+        // ==================== RENDERIZAR MATERIAS ====================
+        function renderizarMaterias() {
+            const contenedor = document.getElementById('materiasList');
+            let html = '';
+            
+            materias.forEach(m => {
+                const prog = calcularProgresoMateria(m.id);
+                const completada = prog.total > 0 && prog.completadas === prog.total;
+                const claseCompletada = completada ? 'completed' : '';
+                
+                html += `
+                    <button class="materia-btn ${materiaActual === m.id ? 'active' : ''}" 
+                            onclick="seleccionarMateria('${m.id}')">
+                        <span class="materia-icon">${m.icono}</span>
+                        <span class="materia-name">${m.nombre}</span>
+                        <span class="materia-progress ${claseCompletada}">${prog.completadas}/${prog.total}</span>
+                    </button>
+                `;
+            });
+            
+            contenedor.innerHTML = html;
+        }
+
+        // ==================== SELECCIONAR MATERIA ====================
+        function seleccionarMateria(materiaId) {
+            materiaActual = materiaId;
+            actividadActual = null;
+            respuestasTemporales = {};
+            
+            renderizarMaterias();
+            renderizarVistaMateria(materiaId);
+        }
+
+        function renderizarVistaMateria(materiaId) {
+            const materia = materias.find(m => m.id === materiaId);
+            if (!materia) return;
+            
+            const actsMateria = ACTIVIDADES.filter(a => a.materia === materiaId);
+            const prog = calcularProgresoMateria(materiaId);
+            const completada = prog.total > 0 && prog.completadas === prog.total;
+            
+            let html = `
+                <div class="materia-header">
+                    <div class="materia-header-icon">${materia.icono}</div>
+                    <div class="materia-header-text">
+                        <h2>${materia.nombre}</h2>
+                        <p>${prog.completadas} de ${prog.total} actividades completadas</p>
+                    </div>
+                </div>
+            `;
+            
+            if (completada && prog.total > 0) {
+                html += `
+                    <div class="materia-completada-banner">
+                        <span>🎉</span>
+                        <span>¡Felicidades! Has completado todas las actividades de ${materia.nombre}.</span>
+                    </div>
+                `;
+            }
+            
+            if (actsMateria.length === 0) {
+                html += `
+                    <div class="sin-actividades">
+                        <div class="icono">📭</div>
+                        <p>Aún no hay actividades en esta materia.</p>
+                    </div>
+                `;
+            } else {
+                html += '<div class="actividades-lista">';
+                actsMateria.forEach(act => {
+                    const respuesta = respuestas.find(r => r.actividadId === act.id);
+                    const entregada = !!respuesta;
+                    
+                    let claseCard = entregada ? 'completada' : 'pendiente';
+                    let badge = entregada 
+                        ? '<span class="badge-completada">✅ Completada</span>' 
+                        : '<button class="actividad-btn">Comenzar →</button>';
+                    let extraMeta = entregada 
+                        ? `<span class="badge-calificacion">${respuesta.aciertos}/${respuesta.total} (${respuesta.porcentaje.toFixed(0)}%)</span>`
+                        : '';
+                    
+                    html += `
+                        <div class="actividad-card ${claseCard}" onclick="abrirActividad('${act.id}')">
+                            <div class="actividad-info">
+                                <div class="actividad-titulo">${act.titulo}</div>
+                                <div class="actividad-meta">
+                                    <span>📝 ${act.preguntas.length} preguntas</span>
+                                    ${extraMeta}
+                                </div>
+                            </div>
+                            ${badge}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        // ==================== ABRIR ACTIVIDAD ====================
+        function abrirActividad(actividadId) {
+            const act = ACTIVIDADES.find(a => a.id === actividadId);
+            if (!act) return;
+            
+            actividadActual = act;
+            respuestasTemporales = {};
+            
+            const respuestaExistente = respuestas.find(r => r.actividadId === actividadId);
+            
+            if (respuestaExistente) {
+                mostrarRevision(act, respuestaExistente);
+            } else {
+                mostrarActividad(act);
+            }
+        }
+
+        function mostrarActividad(act) {
+            const materia = materias.find(m => m.id === act.materia);
+            const preguntas = act.preguntas;
+            
+            let html = `
+                <button class="back-btn" onclick="volverAMateria()">← Volver a ${materia.nombre}</button>
+                <div class="actividad-detalle">
+                    <h2 class="detalle-titulo">${act.titulo}</h2>
+                    
+                    <div class="detalle-seccion">
+                        <h3>🎯 Objetivo</h3>
+                        <p>${act.objetivo}</p>
+                    </div>
+                    
+                    <div class="detalle-seccion">
+                        <h3>📚 Explicación del tema</h3>
+                        <p>${act.explicacion}</p>
+                    </div>
+                    
+                    <div class="detalle-seccion">
+                        <h3>📝 Instrucciones generales</h3>
+                        <p>${act.instrucciones}</p>
+                    </div>
+                    
+                    ${act.ejemplo ? `
+                        <div class="detalle-seccion ejemplo">
+                            <h3>📌 Ejemplo de cómo resolver</h3>
+                            <p>${act.ejemplo}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="preguntas-container">
+                        <h3 class="preguntas-titulo">✏️ Preguntas</h3>
+                        <div id="preguntasContainer">
+            `;
+            
+            preguntas.forEach((p, i) => {
+                html += `
+                    <div class="pregunta">
+                        <div class="pregunta-numero">Pregunta ${i + 1} de ${preguntas.length}</div>
+                        <div class="pregunta-texto">${p.pregunta}</div>
+                        <div class="opciones">
+                `;
+                
+                p.opciones.forEach((op, j) => {
+                    html += `
+                        <label class="opcion" data-pregunta="${i}" data-opcion="${j}">
+                            <input type="radio" name="pregunta_${i}" value="${j}" 
+                                   onchange="seleccionarOpcion(${i}, ${j})">
+                            <span class="opcion-letra">${String.fromCharCode(65 + j)}.</span>
+                            <span>${op}</span>
+                        </label>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            html += `
+                        </div>
+                    </div>
+                    
+                    <div class="enviar-container">
+                        <div class="enviar-info">
+                            <span id="contadorRespondidas">0 de ${preguntas.length} preguntas respondidas</span>
+                        </div>
+                        <button class="enviar-btn" id="btnEnviar" onclick="enviarActividad()" disabled>
+                            Enviar Actividad
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        function seleccionarOpcion(preguntaIdx, opcionIdx) {
+            respuestasTemporales[preguntaIdx] = opcionIdx;
+            
+            document.querySelectorAll(`.opcion[data-pregunta="${preguntaIdx}"]`).forEach(el => {
+                el.classList.remove('selected');
+            });
+            const opcionSel = document.querySelector(`.opcion[data-pregunta="${preguntaIdx}"][data-opcion="${opcionIdx}"]`);
+            if (opcionSel) opcionSel.classList.add('selected');
+            
+            const total = actividadActual.preguntas.length;
+            const respondidas = Object.keys(respuestasTemporales).length;
+            document.getElementById('contadorRespondidas').textContent = 
+                `${respondidas} de ${total} preguntas respondidas`;
+            
+            document.getElementById('btnEnviar').disabled = respondidas < total;
+        }
+
+        // ==================== ENVIAR ====================
+        function enviarActividad() {
+            const act = actividadActual;
+            const preguntas = act.preguntas;
+            
+            if (Object.keys(respuestasTemporales).length < preguntas.length) {
+                alert("Por favor responde todas las preguntas antes de enviar.");
+                return;
+            }
+            
+            if (!confirm("¿Estás seguro de enviar la actividad? No podrás volver a contestarla.")) {
+                return;
+            }
+            
+            const respuestasArray = [];
+            let aciertos = 0;
+            
+            preguntas.forEach((p, i) => {
+                const respuesta = respuestasTemporales[i];
+                respuestasArray.push(respuesta);
+                if (respuesta === p.correcta) aciertos++;
+            });
+            
+            const total = preguntas.length;
+            const porcentaje = (aciertos / total) * 100;
+            
+            db.collection("respuestas").add({
+                alumnoId: alumnoId,
+                alumnoNombre: nombre,
+                sucursal: sucursal,
+                sucursalNombre: sucursalNombre,
+                programa: PROGRAMA,
+                materia: act.materia,
+                materiaNombre: materias.find(m => m.id === act.materia).nombre,
+                actividadId: act.id,
+                actividadTitulo: act.titulo,
+                respuestas: respuestasArray,
+                aciertos: aciertos,
+                total: total,
+                porcentaje: porcentaje,
+                fecha_envio: new Date().toISOString()
+            }).then((docRef) => {
+                respuestas.push({
+                    id: docRef.id,
+                    alumnoId: alumnoId,
+                    programa: PROGRAMA,
+                    materia: act.materia,
+                    actividadId: act.id,
+                    respuestas: respuestasArray,
+                    aciertos: aciertos,
+                    total: total,
+                    porcentaje: porcentaje
+                });
+                
+                actualizarProgreso();
+                renderizarMaterias();
+                
+                const respGuardada = respuestas.find(r => r.actividadId === act.id);
+                mostrarRevision(act, respGuardada);
+            }).catch(error => {
+                console.error("Error al enviar:", error);
+                alert("Error al enviar la actividad. Intenta de nuevo.");
+            });
+        }
+
+        // ==================== REVISIÓN ====================
+        function mostrarRevision(act, respuesta) {
+            const materia = materias.find(m => m.id === act.materia);
+            const preguntas = act.preguntas;
+            
+            let html = `
+                <button class="back-btn" onclick="volverAMateria()">← Volver a ${materia.nombre}</button>
+                
+                <div class="resultado-box">
+                    <h2>✅ Actividad enviada</h2>
+                    <div class="resultado-calificacion">${respuesta.porcentaje.toFixed(0)}%</div>
+                    <div class="resultado-detalle">
+                        ${respuesta.aciertos} de ${respuesta.total} respuestas correctas
+                    </div>
+                </div>
+                
+                <div class="actividad-detalle">
+                    <h2 class="detalle-titulo">${act.titulo}</h2>
+                    <h3 class="preguntas-titulo">📋 Revisión de respuestas</h3>
+                    <div id="revisionContainer">
+            `;
+            
+            preguntas.forEach((p, i) => {
+                const respAlumno = respuesta.respuestas[i];
+                const esCorrecta = respAlumno === p.correcta;
+                
+                html += `
+                    <div class="revision-pregunta ${esCorrecta ? 'correcta' : 'incorrecta'}">
+                        <div class="revision-texto">${i + 1}. ${p.pregunta}</div>
+                        <div class="revision-respuesta ${esCorrecta ? 'correcta' : 'incorrecta'}">
+                            ${esCorrecta ? '✅' : '❌'} Tu respuesta: 
+                            <strong>${p.opciones[respAlumno] || 'No respondida'}</strong>
+                        </div>
+                        ${!esCorrecta ? `
+                            <div class="revision-respuesta correcta">
+                                ✔️ Respuesta correcta: <strong>${p.opciones[p.correcta]}</strong>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div class="aviso-revision">
+                        🔒 Esta actividad ya fue enviada y no puede modificarse.
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        // ==================== NAVEGACIÓN ====================
+        function volverAMateria() {
+            if (materiaActual) {
+                renderizarVistaMateria(materiaActual);
+            } else {
+                document.getElementById('mainContent').innerHTML = `
+                    <div class="welcome-box">
+                        <h1>¡Bienvenido/a! 👋</h1>
+                        <p>Selecciona una materia del menú lateral para comenzar.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function cerrarSesion() {
+            if (confirm("¿Cerrar sesión?")) {
+                localStorage.clear();
+                location.href = "index.html";
+            }
+        }
+// ==================== AVATAR EMOJI ====================
+const EMOJIS = {
+    caritas: ['😀', '😎', '🤓', '🥳', '😊', '🤠'],
+    animales: ['🐶', '🐱', '🦊', '🐼', '🦁', '🦄'],
+    deportes: ['⚽', '🏀', '🏆', '🎮', '🎸', '🎨'],
+    objetos: ['🚀', '⭐', '🔥', '💎', '👑', '🎁']
+};
+
+function renderizarEmojis() {
+    Object.keys(EMOJIS).forEach(cat => {
+        const grid = document.getElementById('grid' + cat.charAt(0).toUpperCase() + cat.slice(1));
+        if (!grid) return;
+        
+        const actual = localStorage.getItem('avatar') || '👤';
+        let html = '';
+        EMOJIS[cat].forEach(emoji => {
+            const selected = emoji === actual ? 'selected' : '';
+            html += `<button class="emoji-option ${selected}" onclick="seleccionarEmoji('${emoji}')">${emoji}</button>`;
+        });
+        grid.innerHTML = html;
+    });
+}
+
+function abrirSelectorEmoji() {
+    renderizarEmojis();
+    document.getElementById('emojiModal').classList.add('show');
+}
+
+function cerrarSelectorEmoji() {
+    document.getElementById('emojiModal').classList.remove('show');
+}
+
+function seleccionarEmoji(emoji) {
+    localStorage.setItem('avatar', emoji);
+    
+    if (alumnoId) {
+        db.collection('alumnos').doc(alumnoId).update({ avatar: emoji })
+            .catch(err => console.error('Error al guardar avatar:', err));
+    }
+    
+    document.getElementById('avatarEmoji').textContent = emoji;
+    cerrarSelectorEmoji();
+}
+
+function cargarAvatar() {
+    const emoji = localStorage.getItem('avatar') || '👤';
+    const avatarEl = document.getElementById('avatarEmoji');
+    if (avatarEl) avatarEl.textContent = emoji;
+}
+
+document.getElementById('emojiModal')?.addEventListener('click', function(e) {
+    if (e.target === this) cerrarSelectorEmoji();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarSelectorEmoji();
+});
+
+cargarAvatar();
+
+        // ==================== INICIO ====================
+
+        
+        inicializar();
+    </script>
+</body>
+</html>

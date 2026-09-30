@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>INSTITUTO MC - Inicio de Sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a3cff 0%, #4f8cff 100%);
+        }
+        
+        .login-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-hover);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            transition: var(--transition);
+        }
+        
+        .login-card:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-header h1 {
+            font-size: 24px;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .form-header p {
+            color: var(--gray);
+            font-size: 15px;
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .login-card .logo-container {
+            margin-bottom: 25px;
+        }
+        
+        .login-card .logo-img {
+            height: 60px;
+        }
+        
+        .login-card .logo-text {
+            font-size: 32px;
+        }
+        
+        /* Mensajes de error específicos */
+        .login-message {
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            line-height: 1.5;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .login-message.show {
+            display: flex;
+        }
+        
+        .login-message .msg-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .login-message .msg-text strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .login-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .login-message.suspendido {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .login-message.suspendido-pago {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .login-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        /* Botón deshabilitado */
+        .btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+        
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-container">
+                <img src="logo.png" alt="Logo INSTITUTO MC" class="logo-img">
+                <div class="logo-text">INSTITUTO MC</div>
+            </div>
+            
+            <div class="form-header">
+                <h1>Acceso a la Plataforma</h1>
+                <p>Ingresa tus credenciales para continuar</p>
+            </div>
+            
+            <!-- Mensajes de error específicos -->
+            <div class="login-message error" id="msgError">
+                <div class="msg-icon">❌</div>
+                <div class="msg-text">
+                    <strong>Credenciales incorrectas</strong>
+                    Verifica tu nombre y contraseña.
+                </div>
+            </div>
+            
+            <div class="login-message suspendido-pago" id="msgSuspendidoPago">
+                <div class="msg-icon">💰</div>
+                <div class="msg-text">
+                    <strong>Suspendido por falta de pago</strong>
+                    Tu cuenta está bloqueada por colegiaturas pendientes. Contacta al administrador para regularizar tu situación.
+                </div>
+            </div>
+            
+            <div class="login-message suspendido" id="msgSuspendido">
+                <div class="msg-icon">⏸️</div>
+                <div class="msg-text">
+                    <strong>Cuenta suspendida</strong>
+                    Tu cuenta ha sido suspendida por el administrador. Contacta a la institución.
+                </div>
+            </div>
+            
+            <div class="login-message info" id="msgCamposVacios">
+                <div class="msg-icon">⚠️</div>
+                <div class="msg-text">
+                    <strong>Campos vacíos</strong>
+                    Por favor completa tu nombre y contraseña.
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="nombre">Nombre completo del alumno</label>
+                <input type="text" id="nombre" class="input-field" placeholder="Ej: Juan Pérez García" autocomplete="off">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <div class="password-container">
+                    <input type="password" id="password" class="input-field" placeholder="Ingresa tu contraseña" autocomplete="off">
+                    <button type="button" class="toggle-password" onclick="togglePassword()">Mostrar</button>
+                </div>
+            </div>
+            
+            <button class="btn" id="btnEntrar" onclick="entrar()">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ==================== FIREBASE ====================
+        firebase.initializeApp({
+            apiKey: "AIzaSyBd8VEqwpRCytHpmPTOGAn7vfJVpZknpbg",
+            authDomain: "inscripciones-bbaf3.firebaseapp.com",
+            projectId: "inscripciones-bbaf3"
+        });
+
+        const db = firebase.firestore();
+
+        // ==================== UTILIDADES ====================
+        function ocultarMensajes() {
+            document.querySelectorAll('.login-message').forEach(m => m.classList.remove('show'));
+        }
+
+        function mostrarMensaje(id) {
+            ocultarMensajes();
+            document.getElementById(id).classList.add('show');
+        }
+
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleButton = document.querySelector('.toggle-password');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleButton.textContent = 'Ocultar';
+            } else {
+                passwordField.type = 'password';
+                toggleButton.textContent = 'Mostrar';
+            }
+        }
+
+        function obtenerNombreSucursal(codigo) {
+            const sucursales = {
+                apizaco: "Apizaco",
+                santa_ana: "Santa Ana",
+                zacatelco: "Zacatelco",
+                san_martin: "San Martín"
+            };
+            return sucursales[codigo] || codigo;
+        }
+
+        function redirigirSegunPrograma(programa) {
+            if (programa === "prep_4") {
+                location.href = "plataforma_4.html";
+            } else if (programa === "prep_6") {
+                location.href = "plataforma_6.html";
+            } else if (programa === "prep_8") {
+                location.href = "plataforma_8.html";
+            } else {
+                alert("Programa no válido. Contacta al administrador.");
+            }
+        }
+
+        // ==================== INICIAR SESIÓN ====================
+        function entrar() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btnEntrar');
+            
+            ocultarMensajes();
+            
+            // Validación básica
+            if (!nombre || !password) {
+                mostrarMensaje('msgCamposVacios');
+                return;
+            }
+            
+            // Deshabilitar botón mientras verifica
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = 'Verificando...';
+            
+            // Buscar alumno por nombre + password
+            db.collection("alumnos")
+                .where("nombre", "==", nombre)
+                .where("password", "==", password)
+                .get()
+                .then(snapshot => {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btn.textContent = 'Iniciar Sesión';
+                    
+                    if (snapshot.empty) {
+                        // Credenciales incorrectas
+                        mostrarMensaje('msgError');
+                        return;
+                    }
+                    
+                    // Solo debería haber 1 resultado (nombre único)
+                    let alumnoValido = null;
+                    snapshot.forEach(doc => {
+                        alumnoValido = { id: doc.id, ...doc.data() };
+                    });
+                    
+                    if (!alumnoValido) {
+                        mostrarMensaje('msgError');
+                        return;
+                    }
+                    
+                    // 1️⃣ Verificar si está suspendido por falta de pago
+                    if (alumnoValido.estado_pago === 'suspendido_pago') {
+                        mostrarMensaje('msgSuspendidoPago');
+                        return;
+                    }
+                    
+                    // 2️⃣ Verificar si está suspendido por el admin
+                    if (alumnoValido.estado === 'suspendido') {
+                        mostrarMensaje('msgSuspendido');
+                        return;
+                    }
+                    
+                    // 3️⃣ Todo bien → Guardar sesión y entrar
+                    localStorage.setItem("alumnoId", alumnoValido.id);
+                    localStorage.setItem("nombre", alumnoValido.nombre);
+                    localStorage.setItem("programa", alumnoValido.programa);
+                    localStorage.setItem("sucursal", alumnoValido.sucursal);
+                    localStorage.setItem("sucursalNombre", obtenerNombreSucursal(alumnoValido.sucursal));
+                    
+                    redirigirSegunPrograma(alumnoValido.programa);
+                })
+                .catch(error => {
+                    console.error("Error al iniciar sesión:", error);
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btn.textContent = 'Iniciar Sesión';
+                    
+                    alert("⚠️ Error al conectar con el servidor\n\nVerifica tu conexión a internet e intenta de nuevo.");
+                });
+        }
+        
+        // ==================== EVENTOS ====================
+        // Permitir Enter para iniciar sesión
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                entrar();
+            }
+        });
+        
+        // Limpiar mensajes al escribir
+        document.getElementById('nombre').addEventListener('input', ocultarMensajes);
+        document.getElementById('password').addEventListener('input', ocultarMensajes);
+    </script>
+</body>
+</html>

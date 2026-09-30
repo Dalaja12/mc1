@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Administrador | INSTITUTO MC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container { min-height: 100vh; padding: 30px 20px; background-color: var(--light); }
+        .admin-header { background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); padding: 25px 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .admin-header h1 { font-size: 24px; color: var(--dark); }
+        .admin-nav { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav-btn { padding: 10px 20px; background-color: var(--light); color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; font-weight: 500; cursor: pointer; transition: var(--transition); }
+        .nav-btn:hover { background-color: var(--primary); color: white; }
+        
+        .tabs { display: flex; gap: 5px; background-color: white; border-radius: var(--border-radius) var(--border-radius) 0 0; padding: 8px 8px 0 8px; box-shadow: var(--box-shadow); margin-bottom: 0; flex-wrap: wrap; }
+        .tab-btn { padding: 14px 25px; background-color: transparent; color: var(--gray); border: none; border-radius: 10px 10px 0 0; font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { background-color: var(--light); }
+        .tab-btn.active { background-color: var(--primary); color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .admin-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 1024px) { .admin-content { grid-template-columns: 1fr; } }
+        
+        .admin-card { background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow); padding: 40px; transition: var(--transition); }
+        .admin-card:hover { box-shadow: var(--box-shadow-hover); }
+        .form-title { font-size: 22px; color: var(--dark); margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .form-instructions { background-color: var(--light); padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 14px; color: var(--gray); border-left: 4px solid var(--primary); }
+        .alert-message { padding: 12px 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; display: none; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .alumnos-list { margin-top: 25px; max-height: 600px; overflow-y: auto; padding-right: 5px; }
+        .alumno-card { background-color: var(--light); border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e0e0e0; transition: var(--transition); }
+        .alumno-card:hover { border-color: var(--primary); background-color: rgba(10, 60, 255, 0.05); }
+        .alumno-card.suspendido { opacity: 0.65; border-left: 4px solid #ffc107; }
+        .alumno-card.suspendido-pago { opacity: 0.65; border-left: 4px solid #dc3545; }
+        .alumno-info { margin-bottom: 10px; }
+        .alumno-nombre { font-weight: 600; color: var(--dark); margin-bottom: 5px; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .badge-suspendido { background-color: #ffc107; color: #856404; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-suspendido-pago { background-color: #dc3545; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-contestadas { background-color: #d1ecf1; color: #0c5460; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-pago-aldia { background-color: #198754; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-pago-atrasado { background-color: #ffc107; color: #856404; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-pago-suspendido { background-color: #dc3545; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .alumno-details { font-size: 13px; color: var(--gray); display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .alumno-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+        .action-btn { padding: 6px 12px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; transition: var(--transition); color: white; }
+        .edit-btn { background-color: #0d6efd; } .edit-btn:hover { background-color: #0b5ed7; }
+        .suspend-btn { background-color: #ffc107; color: #333; } .suspend-btn:hover { background-color: #e0a800; }
+        .reactivar-btn { background-color: #198754; } .reactivar-btn:hover { background-color: #157347; }
+        .delete-btn { background-color: #dc3545; } .delete-btn:hover { background-color: #c82333; }
+        .reset-btn { background-color: #6f42c1; } .reset-btn:hover { background-color: #5a32a3; }
+        .ver-pass-btn { background-color: #6c757d; } .ver-pass-btn:hover { background-color: #5a6268; }
+        .cobrar-btn { background-color: #198754; } .cobrar-btn:hover { background-color: #157347; }
+        .historial-btn { background-color: #0dcaf0; color: #000; } .historial-btn:hover { background-color: #0bb5d8; }
+        .desbloquear-btn { background-color: #198754; } .desbloquear-btn:hover { background-color: #157347; }
+        
+        .empty-state { text-align: center; padding: 30px; color: var(--gray); }
+        .search-input { width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .list-title { font-size: 18px; color: var(--dark); font-weight: 600; }
+        .refresh-btn { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 20px; padding: 5px; }
+        .total-alumnos { font-size: 14px; color: var(--gray); margin-top: 10px; margin-bottom: 15px; }
+        
+        .sucursales-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        .sucursal-btn { padding: 18px 15px; border: 2px solid #ddd; border-radius: 10px; background-color: white; cursor: pointer; transition: var(--transition); text-align: center; font-weight: 600; color: var(--dark); font-size: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .sucursal-btn:hover { border-color: var(--primary); background-color: rgba(10, 60, 255, 0.05); transform: translateY(-2px); }
+        .sucursal-btn.active { border-color: var(--primary); background-color: var(--primary); color: white; }
+        .sucursal-btn .count { font-size: 12px; font-weight: 400; opacity: 0.8; }
+        .sucursal-btn.active .count { opacity: 0.95; }
+        .sucursal-icon { font-size: 24px; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal { background-color: white; border-radius: var(--border-radius); padding: 30px; max-width: 500px; width: 100%; box-shadow: var(--box-shadow-hover); max-height: 90vh; overflow-y: auto; }
+        .modal.large { max-width: 700px; }
+        .modal-title { font-size: 20px; margin-bottom: 15px; color: var(--dark); }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .cancel-btn { padding: 8px 16px; background-color: var(--light); color: var(--dark); border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .confirm-btn { padding: 8px 16px; background-color: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .confirm-delete-btn { padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .confirm-reset-btn { padding: 8px 16px; background-color: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .confirm-cobrar-btn { padding: 8px 16px; background-color: #198754; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .password-generator { display: flex; gap: 10px; margin-top: 10px; }
+        .password-generator .nav-btn { padding: 8px 12px; font-size: 13px; }
+        .filter-info { background-color: rgba(10, 60, 255, 0.08); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .clear-filter-btn { background: none; border: none; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 13px; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 20px; border-radius: 10px; }
+        .stat-card.green { background: linear-gradient(135deg, #198754, #20c997); }
+        .stat-card.orange { background: linear-gradient(135deg, #fd7e14, #ffc107); }
+        .stat-card.purple { background: linear-gradient(135deg, #6f42c1, #a855f7); }
+        .stat-card.red { background: linear-gradient(135deg, #dc3545, #e83e8c); }
+        .stat-card h4 { font-size: 13px; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .stat-value { font-size: 32px; font-weight: 700; line-height: 1; }
+        .stat-card .stat-detail { font-size: 12px; opacity: 0.85; margin-top: 5px; }
+        
+        .filtros-bar { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        @media (max-width: 768px) { .filtros-bar { grid-template-columns: 1fr; } }
+        .filtros-bar select, .filtros-bar input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background-color: white; }
+        .filtros-bar select:focus, .filtros-bar input:focus { outline: none; border-color: var(--primary); }
+        
+        .vista-selector { display: flex; gap: 10px; margin-bottom: 20px; background-color: var(--light); padding: 8px; border-radius: 10px; width: fit-content; flex-wrap: wrap; }
+        .vista-btn { padding: 10px 20px; background-color: transparent; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--gray); font-size: 14px; transition: var(--transition); }
+        .vista-btn:hover { background-color: white; }
+        .vista-btn.active { background-color: var(--primary); color: white; }
+        
+        .acciones-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        
+        .calificaciones-tabla { width: 100%; border-collapse: collapse; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: var(--box-shadow); }
+        .calificaciones-tabla thead { background-color: var(--primary); color: white; }
+        .calificaciones-tabla th { padding: 14px 12px; text-align: left; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .calificaciones-tabla td { padding: 14px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .calificaciones-tabla tbody tr:hover { background-color: rgba(10, 60, 255, 0.03); }
+        .calificaciones-tabla tbody tr:last-child td { border-bottom: none; }
+        
+        .calificaciones-tabla tbody tr.alumno-row { cursor: pointer; }
+        .calificaciones-tabla tbody tr.alumno-row:hover { background-color: rgba(10, 60, 255, 0.06); }
+        .calificaciones-tabla tbody tr.alumno-row.expandido { background-color: rgba(10, 60, 255, 0.08); border-bottom: none; }
+        .calificaciones-tabla tbody tr.alumno-row.expandido td { border-bottom: none; }
+        
+        .expandir-icon { display: inline-block; transition: transform 0.3s ease; margin-right: 8px; color: var(--primary); font-weight: bold; }
+        .alumno-row.expandido .expandir-icon { transform: rotate(90deg); }
+        
+        .detalle-row { background-color: #f8f9fa; }
+        .detalle-row td { padding: 0 !important; }
+        .detalle-contenido { padding: 20px; }
+        .detalle-titulo-mini { font-size: 14px; font-weight: 700; color: var(--gray); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
+        
+        .actividades-lista-mini { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+        .actividad-mini { background-color: white; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .actividad-mini.excelente { border-left-color: #198754; }
+        .actividad-mini.buena { border-left-color: #0dcaf0; }
+        .actividad-mini.regular { border-left-color: #ffc107; }
+        .actividad-mini.baja { border-left-color: #dc3545; }
+        .actividad-mini-titulo { font-weight: 600; font-size: 14px; margin-bottom: 5px; color: var(--dark); }
+        .actividad-mini-materia { font-size: 12px; color: var(--gray); margin-bottom: 8px; }
+        .actividad-mini-nota { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee; }
+        .actividad-mini-nota .pct { font-weight: 700; font-size: 16px; }
+        .actividad-mini-nota .aciertos { font-size: 12px; color: var(--gray); }
+        .actividad-mini-fecha { font-size: 11px; color: var(--gray); margin-top: 5px; }
+        
+        .nota-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; }
+        .nota-excelente { background-color: #d4edda; color: #155724; }
+        .nota-buena { background-color: #d1ecf1; color: #0c5460; }
+        .nota-regular { background-color: #fff3cd; color: #856404; }
+        .nota-baja { background-color: #f8d7da; color: #721c24; }
+        
+        .progreso-mini { display: flex; align-items: center; gap: 10px; }
+        .progreso-mini-bar { flex: 1; height: 10px; background-color: #e9ecef; border-radius: 10px; overflow: hidden; min-width: 80px; }
+        .progreso-mini-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+        
+        .empty-tabla { text-align: center; padding: 60px 20px; color: var(--gray); }
+        .empty-tabla .icono { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
+        
+        .materia-tag { display: inline-block; padding: 3px 10px; background-color: var(--light); color: var(--primary); border-radius: 12px; font-size: 12px; font-weight: 600; }
+        
+        .aviso-eliminar { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; color: #856404; }
+        .aviso-eliminar strong { color: #721c24; }
+        .aviso-reset { background-color: #f3e8ff; border-left: 4px solid #6f42c1; padding: 12px 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; color: #5a32a3; }
+        .aviso-reset strong { color: #4a2593; }
+        
+        .alumno-cell { display: flex; align-items: center; gap: 8px; }
+        .alumno-cell strong { font-size: 15px; }
+        
+        .badge-actividades { display: inline-block; padding: 3px 10px; background-color: var(--primary); color: white; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        
+        .password-display { background-color: #f8f9fa; border: 2px dashed var(--primary); border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+        .password-display .pass-text { font-family: 'Courier New', monospace; font-size: 24px; font-weight: 700; color: var(--primary); letter-spacing: 2px; word-break: break-all; }
+        .password-display .pass-label { font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .password-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .copy-pass-btn { padding: 8px 16px; background-color: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; }
+        
+        /* ============ PAGOS ============ */
+        .pago-alumno-card { background-color: white; border: 1px solid #e0e0e0; border-radius: 10px; padding: 18px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; transition: var(--transition); }
+        .pago-alumno-card:hover { box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .pago-alumno-card.al-dia { border-left: 5px solid #198754; }
+        .pago-alumno-card.atrasado { border-left: 5px solid #ffc107; background-color: #fffbf0; }
+        .pago-alumno-card.suspendido { border-left: 5px solid #dc3545; background-color: #fff5f5; }
+        
+        .pago-alumno-info { flex: 1; min-width: 220px; }
+        .pago-alumno-nombre { font-weight: 600; color: var(--dark); margin-bottom: 5px; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .pago-alumno-detalles { font-size: 13px; color: var(--gray); display: flex; gap: 15px; flex-wrap: wrap; }
+        
+        .pago-montos { display: flex; flex-direction: column; gap: 5px; min-width: 180px; font-size: 13px; }
+        .pago-montos .monto-item { display: flex; justify-content: space-between; gap: 10px; }
+        .pago-montos .monto-label { color: var(--gray); }
+        .pago-montos .monto-valor { font-weight: 600; color: var(--dark); }
+        
+        .pago-estado { min-width: 140px; text-align: center; }
+        .pago-estado .badge-estado { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-aldia { background-color: #d4edda; color: #155724; }
+        .badge-atrasado { background-color: #fff3cd; color: #856404; }
+        .badge-suspendido-pago { background-color: #f8d7da; color: #721c24; }
+        
+        .pago-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        .pago-semana-info {
+            background-color: #f8f9fa; padding: 12px 20px; border-radius: 10px; 
+            margin-bottom: 20px; font-size: 14px; color: var(--gray);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        .pago-semana-info strong { color: var(--dark); }
+        
+        /* Total de pagos badge */
+        .badge-total-pagos {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #198754, #20c997);
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        
+        /* Historial pagos */
+        .pago-hist-item { background-color: #f8f9fa; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #198754; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .pago-hist-fecha { font-size: 14px; font-weight: 600; color: var(--dark); }
+        .pago-hist-monto { font-size: 16px; font-weight: 700; color: #198754; }
+        .pago-hist-info { font-size: 12px; color: var(--gray); }
+        
+        .cobrar-form-group { margin-bottom: 18px; }
+        .cobrar-form-group label { display: block; font-weight: 600; color: var(--dark); margin-bottom: 6px; font-size: 14px; }
+        .cobrar-form-group input, .cobrar-form-group select, .cobrar-form-group textarea {
+            width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; font-family: inherit;
+        }
+        .cobrar-form-group input:focus, .cobrar-form-group select:focus, .cobrar-form-group textarea:focus {
+            outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(10,60,255,0.1);
+        }
+        .cobrar-form-group textarea { resize: vertical; min-height: 60px; }
+        
+        .monto-grande { background: linear-gradient(135deg, #198754, #20c997); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .monto-grande .monto-num { font-size: 42px; font-weight: 700; line-height: 1; }
+        .monto-grande .monto-lbl { font-size: 13px; opacity: 0.9; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="logo-container" style="margin-bottom: 0;">
+                <div class="logo-text">INSTITUTO MC - Admin</div>
+            </div>
+            <div class="admin-nav">
+                <button class="nav-btn" onclick="location.href='index.html'">Ver Login</button>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarTab('alumnos')" id="tabBtnAlumnos">👥 Alumnos</button>
+            <button class="tab-btn" onclick="cambiarTab('pagos')" id="tabBtnPagos">💰 Pagos</button>
+            <button class="tab-btn" onclick="cambiarTab('calificaciones')" id="tabBtnCalif">📊 Calificaciones</button>
+        </div>
+        
+        <!-- ============ TAB ALUMNOS ============ -->
+        <div class="tab-content active" id="tabAlumnos" style="background-color: white; border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius); padding: 30px; box-shadow: var(--box-shadow);">
+            <div class="admin-content">
+                <div class="admin-card" style="box-shadow: none; padding: 0;">
+                    <h2 class="form-title" id="formTitle">Crear Nuevo Alumno</h2>
+                    <div class="form-instructions">
+                        <p id="formInstructions">Complete todos los campos para registrar un nuevo alumno.</p>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="nombre">Nombre completo del alumno</label>
+                        <input type="text" id="nombre" class="input-field" placeholder="Ej: Juan Pérez García">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="telefono">Teléfono (contacto)</label>
+                        <input type="tel" id="telefono" class="input-field" placeholder="Ej: 2411234567" maxlength="10">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password">Contraseña</label>
+                        <input type="text" id="password" class="input-field" placeholder="Generar o ingresar contraseña">
+                        <div class="password-generator">
+                            <button type="button" class="nav-btn" onclick="generarPassword()">Generar</button>
+                            <button type="button" class="nav-btn" onclick="togglePasswordVisibility()">Mostrar/Ocultar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="programa">Programa académico</label>
+                        <select id="programa" class="select-field">
+                            <option value="">Selecciona un programa</option>
+                            <option value="prep_4">Preparatoria 4 meses - $350/sem</option>
+                            <option value="prep_6">Preparatoria 6 meses - $300/sem</option>
+                            <option value="prep_8">Preparatoria 8 meses - $250/sem</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="sucursal">Sucursal</label>
+                        <select id="sucursal" class="select-field">
+                            <option value="">Selecciona una sucursal</option>
+                            <option value="apizaco">Apizaco</option>
+                            <option value="santa_ana">Santa Ana</option>
+                            <option value="zacatelco">Zacatelco</option>
+                            <option value="san_martin">San Martín</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn" id="submitBtn" onclick="guardarAlumno()">Registrar Alumno</button>
+                    <button class="btn" id="cancelEditBtn" style="display: none; background-color: var(--gray); margin-top: 10px;" onclick="cancelarEdicion()">Cancelar Edición</button>
+                    
+                    <div id="alertSuccess" class="alert-message alert-success"></div>
+                    <div id="alertError" class="alert-message alert-error"></div>
+                </div>
+                
+                <div class="admin-card" style="box-shadow: none; padding: 0;">
+                    <div class="list-header">
+                        <h2 class="list-title">Alumnos Registrados</h2>
+                        <button class="refresh-btn" onclick="cargarAlumnos()" title="Actualizar">🔄</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 14px; font-weight: 600; color: var(--gray); margin-bottom: 8px; display: block;">Filtrar por sucursal:</label>
+                        <div class="sucursales-grid">
+                            <button class="sucursal-btn" data-sucursal="apizaco" onclick="filtrarPorSucursal('apizaco')">
+                                <span class="sucursal-icon">🏢</span><span>Apizaco</span>
+                                <span class="count" id="count-apizaco">0</span>
+                            </button>
+                            <button class="sucursal-btn" data-sucursal="santa_ana" onclick="filtrarPorSucursal('santa_ana')">
+                                <span class="sucursal-icon">🏢</span><span>Santa Ana</span>
+                                <span class="count" id="count-santa_ana">0</span>
+                            </button>
+                            <button class="sucursal-btn" data-sucursal="zacatelco" onclick="filtrarPorSucursal('zacatelco')">
+                                <span class="sucursal-icon">🏢</span><span>Zacatelco</span>
+                                <span class="count" id="count-zacatelco">0</span>
+                            </button>
+                            <button class="sucursal-btn" data-sucursal="san_martin" onclick="filtrarPorSucursal('san_martin')">
+                                <span class="sucursal-icon">🏢</span><span>San Martín</span>
+                                <span class="count" id="count-san_martin">0</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <input type="text" id="searchInput" class="search-input" placeholder="Buscar alumno por nombre..." onkeyup="aplicarFiltros()">
+                    
+                    <div class="filter-info" id="filterInfo" style="display: none; margin-top: 15px;">
+                        <span id="filterText"></span>
+                        <button class="clear-filter-btn" onclick="limpiarFiltros()">Limpiar ✕</button>
+                    </div>
+                    
+                    <div class="total-alumnos">Total: <span id="totalCount">0</span> alumnos</div>
+                    
+                    <div class="alumnos-list" id="alumnosList">
+                        <div class="empty-state">
+                            <div>📚</div>
+                            <p>No hay alumnos registrados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ============ TAB PAGOS ============ -->
+        <div class="tab-content" id="tabPagos" style="background-color: white; border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius); padding: 30px; box-shadow: var(--box-shadow);">
+            <h2 class="form-title" style="margin-top: 0;">💰 Control de Pagos</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total alumnos</h4>
+                    <div class="stat-value" id="statTotalAlumnos">0</div>
+                    <div class="stat-detail">Registrados</div>
+                </div>
+                <div class="stat-card green">
+                    <h4>Al corriente</h4>
+                    <div class="stat-value" id="statAlDia">0</div>
+                    <div class="stat-detail">Pagaron esta semana</div>
+                </div>
+                <div class="stat-card orange">
+                    <h4>Atrasados</h4>
+                    <div class="stat-value" id="statAtrasados">0</div>
+                    <div class="stat-detail">Sin pagar (jue-dom)</div>
+                </div>
+                <div class="stat-card red">
+                    <h4>Suspendidos por pago</h4>
+                    <div class="stat-value" id="statSuspendidosPago">0</div>
+                    <div class="stat-detail">Bloqueados</div>
+                </div>
+            </div>
+            
+            <div class="pago-semana-info" id="pagoSemanaInfo">
+                <span>Cargando información de la semana...</span>
+            </div>
+            
+            <div class="filtros-bar" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
+                <input type="text" id="pagoSearch" placeholder="🔍 Buscar alumno..." onkeyup="aplicarFiltrosPagos()">
+                <select id="pagoSucursal" onchange="aplicarFiltrosPagos()">
+                    <option value="">Todas las sucursales</option>
+                    <option value="apizaco">Apizaco</option>
+                    <option value="santa_ana">Santa Ana</option>
+                    <option value="zacatelco">Zacatelco</option>
+                    <option value="san_martin">San Martín</option>
+                </select>
+                <select id="pagoPrograma" onchange="aplicarFiltrosPagos()">
+                    <option value="">Todos los programas</option>
+                    <option value="prep_4">Preparatoria 4 meses</option>
+                    <option value="prep_6">Preparatoria 6 meses</option>
+                    <option value="prep_8">Preparatoria 8 meses</option>
+                </select>
+                <select id="pagoEstatus" onchange="aplicarFiltrosPagos()">
+                    <option value="">Todos los estados</option>
+                    <option value="al_dia">🟢 Al día</option>
+                    <option value="atrasado">🟡 Atrasado</option>
+                    <option value="suspendido_pago">🔴 Suspendido por pago</option>
+                </select>
+            </div>
+            
+            <div class="acciones-bar">
+                <button class="nav-btn" onclick="cargarPagos()">🔄 Actualizar</button>
+                <span style="font-size: 13px; color: var(--gray);" id="pagosInfo"></span>
+            </div>
+            
+            <div id="pagosContainer">
+                <div class="empty-tabla">
+                    <div class="icono">💰</div>
+                    <p>Cargando pagos...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ============ TAB CALIFICACIONES ============ -->
+        <div class="tab-content" id="tabCalificaciones" style="background-color: white; border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius); padding: 30px; box-shadow: var(--box-shadow);">
+            <h2 class="form-title" style="margin-top: 0;">📊 Calificaciones de Alumnos</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card green">
+                    <h4>Promedio general</h4>
+                    <div class="stat-value" id="statPromedio">0%</div>
+                    <div class="stat-detail">Calificación promedio</div>
+                </div>
+                <div class="stat-card orange">
+                    <h4>Alumnos activos</h4>
+                    <div class="stat-value" id="statAlumnosActivos">0</div>
+                    <div class="stat-detail">Han contestado al menos 1</div>
+                </div>
+                <div class="stat-card purple">
+                    <h4>Aciertos totales</h4>
+                    <div class="stat-value" id="statAciertos">0</div>
+                    <div class="stat-detail">Respuestas correctas</div>
+                </div>
+            </div>
+            
+            <div class="vista-selector">
+                <button class="vista-btn active" onclick="cambiarVista('alumno')" id="vistaBtnAlumno">👤 Ver por Alumno</button>
+                <button class="vista-btn" onclick="cambiarVista('actividad')" id="vistaBtnActividad">📋 Ver por Actividad</button>
+            </div>
+            
+            <div class="filtros-bar">
+                <input type="text" id="califSearch" placeholder="🔍 Buscar alumno..." onkeyup="aplicarFiltrosCalif()">
+                <select id="califSucursal" onchange="aplicarFiltrosCalif()">
+                    <option value="">Todas las sucursales</option>
+                    <option value="apizaco">Apizaco</option>
+                    <option value="santa_ana">Santa Ana</option>
+                    <option value="zacatelco">Zacatelco</option>
+                    <option value="san_martin">San Martín</option>
+                </select>
+                <select id="califPrograma" onchange="aplicarFiltrosCalif()">
+                    <option value="">Todos los programas</option>
+                    <option value="prep_4">Preparatoria 4 meses</option>
+                    <option value="prep_6">Preparatoria 6 meses</option>
+                    <option value="prep_8">Preparatoria 8 meses</option>
+                </select>
+                <select id="califMateria" onchange="aplicarFiltrosCalif()">
+                    <option value="">Todas las materias</option>
+                    <option value="espanol">📖 Español</option>
+                    <option value="matematicas">🔢 Matemáticas</option>
+                    <option value="historia">🏛️ Historia</option>
+                    <option value="geografia">🌎 Geografía</option>
+                    <option value="quimica">⚗️ Química</option>
+                    <option value="fisica">⚛️ Física</option>
+                    <option value="ingles">🇬🇧 Inglés</option>
+                </select>
+            </div>
+            
+            <div class="acciones-bar">
+                <button class="nav-btn" onclick="cargarCalificaciones()">🔄 Actualizar</button>
+            </div>
+            
+            <div id="califContainer">
+                <div class="empty-tabla">
+                    <div class="icono">📊</div>
+                    <p>No hay calificaciones registradas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal eliminar -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h3 class="modal-title">⚠️ ¿Eliminar alumno?</h3>
+            <p>¿Estás seguro de que deseas eliminar a <strong id="deleteNombre"></strong>?</p>
+            <div class="aviso-eliminar" id="avisoRespuestas">
+                📋 Se eliminarán también <strong id="deleteRespuestas">0</strong> respuestas y <strong id="deletePagos">0</strong> pagos.
+            </div>
+            <p style="font-size: 14px; color: var(--gray); margin-top: 15px;">⚠️ Esta acción <strong>no se puede deshacer</strong>.</p>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="cerrarModalEliminar()">Cancelar</button>
+                <button class="confirm-delete-btn" onclick="confirmarEliminar()">Eliminar todo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal suspender -->
+    <div class="modal-overlay" id="suspendModal">
+        <div class="modal">
+            <h3 class="modal-title" id="suspendModalTitle">¿Suspender alumno?</h3>
+            <p id="suspendModalText">¿Suspender a <strong id="suspendNombre"></strong>?</p>
+            <p style="font-size: 14px; color: var(--gray); margin-top: 10px;" id="suspendModalHint"></p>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="cerrarModalSuspender()">Cancelar</button>
+                <button class="confirm-btn" id="suspendConfirmBtn" onclick="confirmarSuspender()">Suspender</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Resetear respuestas -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal">
+            <h3 class="modal-title">🧹 ¿Resetear respuestas?</h3>
+            <p>¿Resetear todas las respuestas de <strong id="resetNombre"></strong>?</p>
+            <div class="aviso-reset">
+                🧹 Se eliminarán <strong id="resetRespuestas">0</strong> respuestas del alumno.
+            </div>
+            <p style="font-size: 14px; color: var(--gray); margin-top: 15px;">
+                ⚠️ El alumno volverá a tener 0% de progreso.
+            </p>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="cerrarModalReset()">Cancelar</button>
+                <button class="confirm-reset-btn" onclick="confirmarReset()">🧹 Resetear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Contraseña -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
+            <h3 class="modal-title">🔑 Contraseña del Alumno</h3>
+            <p style="font-size: 14px; color: var(--gray);">
+                Alumno: <strong id="passAlumnoNombre" style="color: var(--dark);"></strong>
+            </p>
+            <div class="password-display">
+                <div class="pass-label">Contraseña</div>
+                <div class="pass-text" id="passText">••••••••</div>
+            </div>
+            <div class="password-actions">
+                <button class="copy-pass-btn" onclick="copiarPassword()">📋 Copiar al portapapeles</button>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="cerrarModalPassword()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cobrar Pago -->
+    <div class="modal-overlay" id="cobrarModal">
+        <div class="modal">
+            <h3 class="modal-title">💵 Registrar Pago</h3>
+            <p style="font-size: 14px; color: var(--gray); margin-bottom: 15px;">
+                Alumno: <strong id="cobrarNombre" style="color: var(--dark);"></strong>
+            </p>
+            
+            <div class="monto-grande">
+                <div class="monto-num" id="cobrarMontoSugerido">$0</div>
+                <div class="monto-lbl">Monto sugerido</div>
+            </div>
+            
+            <div class="cobrar-form-group">
+                <label>Monto recibido</label>
+                <input type="number" id="cobrarMonto" placeholder="350" min="0" step="1">
+            </div>
+            
+            <div class="cobrar-form-group">
+                <label>Método de pago</label>
+                <select id="cobrarMetodo">
+                    <option value="efectivo">💵 Efectivo</option>
+                    <option value="transferencia">🏦 Transferencia</option>
+                    <option value="deposito">📥 Depósito</option>
+                    <option value="otro">📌 Otro</option>
+                </select>
+            </div>
+            
+            <div class="cobrar-form-group">
+                <label>Notas (opcional)</label>
+                <textarea id="cobrarNotas" placeholder="Ej: Pago semana del 15/01"></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="cerrarModalCobrar()">Cancelar</button>
+                <button class="confirm-cobrar-btn" onclick="confirmarCobrar()">💵 Registrar Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Historial de Pagos -->
+    <div class="modal-overlay" id="historialModal">
+        <div class="modal large">
+            <h3 class="modal-title">📋 Historial de Pagos</h3>
+            <p style="font-size: 14px; color: var(--gray); margin-bottom: 15px;">
+                Alumno: <strong id="historialNombre" style="color: var(--dark);"></strong>
+            </p>
+            <div id="historialContenido"></div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="cerrarModalHistorial()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        firebase.initializeApp({
+            apiKey: "AIzaSyBd8VEqwpRCytHpmPTOGAn7vfJVpZknpbg",
+            authDomain: "inscripciones-bbaf3.firebaseapp.com",
+            projectId: "inscripciones-bbaf3"
+        });
+
+        const db = firebase.firestore();
+
+        let alumnos = [];
+        let calificaciones = [];
+        let pagos = [];
+        let alumnoAEliminar = null;
+        let alumnoASuspender = null;
+        let alumnoAResetear = null;
+        let alumnoEditando = null;
+        let alumnoACobrar = null;
+        let filtroSucursal = null;
+        let vistaActual = 'alumno';
+        let alumnosExpandidos = new Set();
+        let passwordActual = '';
+
+        const programasNombres = {
+            prep_4: "Preparatoria 4 meses",
+            prep_6: "Preparatoria 6 meses",
+            prep_8: "Preparatoria 8 meses"
+        };
+
+        const colegiaturas = {
+            prep_4: 350,
+            prep_6: 300,
+            prep_8: 250
+        };
+
+        const sucursalesNombres = {
+            apizaco: "Apizaco",
+            santa_ana: "Santa Ana",
+            zacatelco: "Zacatelco",
+            san_martin: "San Martín"
+        };
+
+        const materiasIconos = {
+            espanol: "📖 Español",
+            matematicas: "🔢 Matemáticas",
+            historia: "🏛️ Historia",
+            geografia: "🌎 Geografía",
+            quimica: "⚗️ Química",
+            fisica: "⚛️ Física",
+            ingles: "🇬🇧 Inglés"
+        };
+
+        // ==================== UTILIDADES DE FECHA ====================
+        function obtenerLunes(fecha = new Date()) {
+            const d = new Date(fecha);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            d.setDate(diff);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        function formatearFecha(fecha) {
+            if (!fecha) return 'N/D';
+            const d = new Date(fecha);
+            return d.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function obtenerSemanaISO(fecha = new Date()) {
+            const d = new Date(fecha);
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+            const week1 = new Date(d.getFullYear(), 0, 4);
+            const weekNum = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+            return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+        }
+
+        function obtenerDiaSemana() {
+            return new Date().getDay();
+        }
+
+        // ==================== PESTAÑAS ====================
+        function cambiarTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'alumnos') {
+                document.getElementById('tabBtnAlumnos').classList.add('active');
+                document.getElementById('tabAlumnos').classList.add('active');
+            } else if (tab === 'pagos') {
+                document.getElementById('tabBtnPagos').classList.add('active');
+                document.getElementById('tabPagos').classList.add('active');
+                cargarPagos();
+            } else {
+                document.getElementById('tabBtnCalif').classList.add('active');
+                document.getElementById('tabCalificaciones').classList.add('active');
+                cargarCalificaciones();
+            }
+        }
+
+        function cambiarVista(vista) {
+            vistaActual = vista;
+            document.getElementById('vistaBtnAlumno').classList.toggle('active', vista === 'alumno');
+            document.getElementById('vistaBtnActividad').classList.toggle('active', vista === 'actividad');
+            aplicarFiltrosCalif();
+        }
+
+        // ==================== FORMULARIO ====================
+        function generarPassword() {
+            const caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let password = "";
+            for (let i = 0; i < 10; i++) {
+                password += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            document.getElementById('password').value = password;
+        }
+
+        function togglePasswordVisibility() {
+            const f = document.getElementById('password');
+            f.type = f.type === 'password' ? 'text' : 'password';
+        }
+
+        function guardarAlumno() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const programa = document.getElementById('programa').value;
+            const sucursal = document.getElementById('sucursal').value;
+            
+            ocultarAlertas();
+            
+            if (!nombre || !password || !programa || !sucursal) {
+                mostrarAlerta('error', "Por favor, completa todos los campos obligatorios");
+                return;
+            }
+            
+            if (telefono && !/^\d{10}$/.test(telefono)) {
+                mostrarAlerta('error', "El teléfono debe tener 10 dígitos");
+                return;
+            }
+            
+            if (alumnoEditando) {
+                const alumnoOriginal = alumnos.find(a => a.id === alumnoEditando);
+                const datosActualizar = {
+                    nombre, telefono, password, programa,
+                    programa_nombre: programasNombres[programa] || programa,
+                    sucursal,
+                    sucursal_nombre: sucursalesNombres[sucursal] || sucursal,
+                    colegiatura_semanal: colegiaturas[programa] || 0
+                };
+                
+                if (alumnoOriginal && alumnoOriginal.programa !== programa) {
+                    datosActualizar.colegiatura_semanal = colegiaturas[programa] || 0;
+                }
+                
+                db.collection("alumnos").doc(alumnoEditando).update(datosActualizar)
+                .then(() => {
+                    mostrarAlerta('success', "Alumno actualizado correctamente");
+                    cancelarEdicion();
+                    cargarAlumnos();
+                }).catch(error => {
+                    console.error(error);
+                    mostrarAlerta('error', `Error al actualizar: ${error.message}`);
+                });
+            } else {
+                db.collection("alumnos")
+                    .where("nombre", "==", nombre)
+                    .get()
+                    .then(snapshot => {
+                        if (!snapshot.empty) {
+                            mostrarAlerta('error', "Ya existe un alumno con ese nombre");
+                            return;
+                        }
+                        
+                        const hoy = new Date();
+                        const lunes = obtenerLunes(hoy);
+                        const proximoLunes = new Date(lunes);
+                        proximoLunes.setDate(proximoLunes.getDate() + 7);
+                        
+                        return db.collection("alumnos").add({
+                            nombre, telefono, password, programa,
+                            programa_nombre: programasNombres[programa] || programa,
+                            sucursal,
+                            sucursal_nombre: sucursalesNombres[sucursal] || sucursal,
+                            colegiatura_semanal: colegiaturas[programa] || 0,
+                            fecha_inscripcion: hoy.toISOString(),
+                            fecha_ultimo_pago: null,
+                            fecha_proximo_pago: proximoLunes.toISOString(),
+                            semana_ultimo_pago: null,
+                            estado: "activo",
+                            estado_pago: "pendiente",
+                            fecha_creacion: hoy.toISOString()
+                        });
+                    })
+                    .then((docRef) => {
+                        if (docRef) {
+                            mostrarAlerta('success', "Alumno registrado correctamente");
+                            limpiarFormulario();
+                            cargarAlumnos();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        mostrarAlerta('error', `Error: ${error.message}`);
+                    });
+            }
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('nombre').value = "";
+            document.getElementById('telefono').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('programa').value = "";
+            document.getElementById('sucursal').value = "";
+        }
+
+        function ocultarAlertas() {
+            document.getElementById('alertSuccess').style.display = 'none';
+            document.getElementById('alertError').style.display = 'none';
+        }
+
+        function mostrarAlerta(tipo, mensaje) {
+            const el = document.getElementById(tipo === 'success' ? 'alertSuccess' : 'alertError');
+            el.textContent = mensaje;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        // ==================== EDITAR ====================
+        function editarAlumno(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            
+            alumnoEditando = id;
+            document.getElementById('nombre').value = alumno.nombre || '';
+            document.getElementById('telefono').value = alumno.telefono || '';
+            document.getElementById('password').value = alumno.password || '';
+            document.getElementById('programa').value = alumno.programa || '';
+            document.getElementById('sucursal').value = alumno.sucursal || '';
+            
+            document.getElementById('formTitle').textContent = 'Editar Alumno';
+            document.getElementById('formInstructions').textContent = `Editando a: ${alumno.nombre}`;
+            document.getElementById('submitBtn').textContent = 'Guardar Cambios';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            
+            document.querySelector('.admin-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicion() {
+            alumnoEditando = null;
+            limpiarFormulario();
+            document.getElementById('formTitle').textContent = 'Crear Nuevo Alumno';
+            document.getElementById('formInstructions').textContent = 'Complete todos los campos para registrar un nuevo alumno.';
+            document.getElementById('submitBtn').textContent = 'Registrar Alumno';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        // ==================== VER CONTRASEÑA ====================
+        function verPassword(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            
+            passwordActual = alumno.password || '(Sin contraseña)';
+            document.getElementById('passAlumnoNombre').textContent = alumno.nombre;
+            document.getElementById('passText').textContent = passwordActual;
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+
+        function cerrarModalPassword() {
+            document.getElementById('passwordModal').style.display = 'none';
+            passwordActual = '';
+        }
+
+        function copiarPassword() {
+            navigator.clipboard.writeText(passwordActual).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiada';
+                btn.style.backgroundColor = '#198754';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                alert('No se pudo copiar: ' + err.message);
+            });
+        }
+
+        // ==================== SUSPENDER ====================
+        function abrirModalSuspender(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            
+            alumnoASuspender = id;
+            const suspendido = alumno.estado === 'suspendido';
+            
+            document.getElementById('suspendNombre').textContent = alumno.nombre;
+            
+            if (suspendido) {
+                document.getElementById('suspendModalTitle').textContent = '¿Reactivar alumno?';
+                document.getElementById('suspendModalText').innerHTML = `¿Reactivar a <strong>${alumno.nombre}</strong>?`;
+                document.getElementById('suspendModalHint').textContent = 'El alumno podrá volver a iniciar sesión.';
+                document.getElementById('suspendConfirmBtn').textContent = 'Reactivar';
+                document.getElementById('suspendConfirmBtn').style.backgroundColor = '#198754';
+                document.getElementById('suspendConfirmBtn').style.color = 'white';
+            } else {
+                document.getElementById('suspendModalTitle').textContent = '¿Suspender alumno?';
+                document.getElementById('suspendModalText').innerHTML = `¿Suspender a <strong>${alumno.nombre}</strong>?`;
+                document.getElementById('suspendModalHint').textContent = 'El alumno no podrá iniciar sesión.';
+                document.getElementById('suspendConfirmBtn').textContent = 'Suspender';
+                document.getElementById('suspendConfirmBtn').style.backgroundColor = '#ffc107';
+                document.getElementById('suspendConfirmBtn').style.color = '#333';
+            }
+            
+            document.getElementById('suspendModal').style.display = 'flex';
+        }
+
+        function cerrarModalSuspender() {
+            document.getElementById('suspendModal').style.display = 'none';
+            alumnoASuspender = null;
+        }
+
+        function confirmarSuspender() {
+            if (!alumnoASuspender) return;
+            const alumno = alumnos.find(a => a.id === alumnoASuspender);
+            if (!alumno) return;
+            
+            const nuevoEstado = alumno.estado === 'suspendido' ? 'activo' : 'suspendido';
+            const updateData = { estado: nuevoEstado };
+            
+            if (nuevoEstado === 'activo' && alumno.estado_pago === 'suspendido_pago') {
+                updateData.estado_pago = 'al_dia';
+            }
+            
+            db.collection("alumnos").doc(alumnoASuspender).update(updateData)
+                .then(() => {
+                    cerrarModalSuspender();
+                    cargarAlumnos();
+                    mostrarAlerta('success', nuevoEstado === 'suspendido' ? "Alumno suspendido" : "Alumno reactivado");
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("Error al cambiar el estado");
+                });
+        }
+
+        // ==================== RESETEAR RESPUESTAS ====================
+        function abrirModalReset(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            alumnoAResetear = id;
+            document.getElementById('resetNombre').textContent = alumno.nombre;
+            
+            db.collection("respuestas").where("alumnoId", "==", id).get()
+                .then(snapshot => {
+                    document.getElementById('resetRespuestas').textContent = snapshot.size;
+                    document.getElementById('resetModal').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('resetModal').style.display = 'flex';
+                });
+        }
+
+        function cerrarModalReset() {
+            document.getElementById('resetModal').style.display = 'none';
+            alumnoAResetear = null;
+        }
+
+        async function confirmarReset() {
+            if (!alumnoAResetear) return;
+            const alumnoIdReset = alumnoAResetear;
+            
+            try {
+                const snapshot = await db.collection("respuestas").where("alumnoId", "==", alumnoIdReset).get();
+                const batch = db.batch();
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                if (!snapshot.empty) await batch.commit();
+                
+                cerrarModalReset();
+                cargarAlumnos();
+                mostrarAlerta('success', `✅ ${snapshot.size} respuesta(s) eliminada(s)`);
+            } catch (error) {
+                console.error(error);
+                alert("Error: " + error.message);
+            }
+        }
+
+        // ==================== ELIMINAR ====================
+        function abrirModalEliminar(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            alumnoAEliminar = id;
+            document.getElementById('deleteNombre').textContent = alumno.nombre;
+            
+            Promise.all([
+                db.collection("respuestas").where("alumnoId", "==", id).get(),
+                db.collection("pagos").where("alumnoId", "==", id).get()
+            ]).then(([respSnap, pagosSnap]) => {
+                document.getElementById('deleteRespuestas').textContent = respSnap.size;
+                document.getElementById('deletePagos').textContent = pagosSnap.size;
+                document.getElementById('deleteModal').style.display = 'flex';
+            }).catch(error => {
+                console.error(error);
+                document.getElementById('deleteModal').style.display = 'flex';
+            });
+        }
+
+        function cerrarModalEliminar() {
+            document.getElementById('deleteModal').style.display = 'none';
+            alumnoAEliminar = null;
+        }
+
+        async function confirmarEliminar() {
+            if (!alumnoAEliminar) return;
+            const alumnoIdEliminar = alumnoAEliminar;
+            
+            try {
+                const [respSnap, pagosSnap] = await Promise.all([
+                    db.collection("respuestas").where("alumnoId", "==", alumnoIdEliminar).get(),
+                    db.collection("pagos").where("alumnoId", "==", alumnoIdEliminar).get()
+                ]);
+                
+                const batch = db.batch();
+                respSnap.forEach(doc => batch.delete(doc.ref));
+                pagosSnap.forEach(doc => batch.delete(doc.ref));
+                if (!respSnap.empty || !pagosSnap.empty) await batch.commit();
+                
+                await db.collection("alumnos").doc(alumnoIdEliminar).delete();
+                
+                cerrarModalEliminar();
+                cargarAlumnos();
+                mostrarAlerta('success', `Alumno eliminado con ${respSnap.size} respuestas y ${pagosSnap.size} pagos`);
+            } catch (error) {
+                console.error(error);
+                alert("Error: " + error.message);
+            }
+        }
+
+        // ==================== CARGAR ALUMNOS ====================
+        async function cargarAlumnos() {
+            try {
+                const querySnapshot = await db.collection("alumnos").orderBy("fecha_creacion", "desc").get();
+                alumnos = [];
+                querySnapshot.forEach(doc => alumnos.push({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                const snapshot = await db.collection("alumnos").get();
+                alumnos = [];
+                snapshot.forEach(doc => alumnos.push({ id: doc.id, ...doc.data() }));
+            }
+            
+            // Cargar conteo de respuestas
+            try {
+                const respSnapshot = await db.collection("respuestas").get();
+                const contador = {};
+                respSnapshot.forEach(doc => {
+                    const aid = doc.data().alumnoId;
+                    contador[aid] = (contador[aid] || 0) + 1;
+                });
+                alumnos.forEach(a => a._contestadas = contador[a.id] || 0);
+            } catch (e) {
+                alumnos.forEach(a => a._contestadas = 0);
+            }
+            
+            // Cargar conteo de pagos por alumno
+            try {
+                const pagosSnapshot = await db.collection("pagos").get();
+                const contadorPagos = {};
+                pagosSnapshot.forEach(doc => {
+                    const aid = doc.data().alumnoId;
+                    contadorPagos[aid] = (contadorPagos[aid] || 0) + 1;
+                });
+                alumnos.forEach(a => a._totalPagos = contadorPagos[a.id] || 0);
+            } catch (e) {
+                alumnos.forEach(a => a._totalPagos = 0);
+            }
+            
+            verificarAtrasos();
+            actualizarContadoresSucursales();
+            aplicarFiltros();
+        }
+
+        async function verificarAtrasos() {
+            const semanaActual = obtenerSemanaISO();
+            const diaSemana = obtenerDiaSemana();
+            const esDiaAtraso = diaSemana >= 4 || diaSemana === 0;
+            
+            const batch = db.batch();
+            let cambios = 0;
+            
+            alumnos.forEach(alumno => {
+                if (alumno.semana_ultimo_pago === semanaActual) {
+                    if (alumno.estado_pago !== 'al_dia') {
+                        batch.update(db.collection("alumnos").doc(alumno.id), { estado_pago: 'al_dia' });
+                        alumno.estado_pago = 'al_dia';
+                        cambios++;
+                    }
+                } else {
+                    if (esDiaAtraso) {
+                        if (alumno.estado_pago !== 'atrasado' && alumno.estado_pago !== 'suspendido_pago') {
+                            batch.update(db.collection("alumnos").doc(alumno.id), { estado_pago: 'atrasado' });
+                            alumno.estado_pago = 'atrasado';
+                            cambios++;
+                        }
+                    } else {
+                        if (alumno.estado_pago !== 'pendiente' && alumno.estado_pago !== 'al_dia' && alumno.estado_pago !== 'suspendido_pago') {
+                            batch.update(db.collection("alumnos").doc(alumno.id), { estado_pago: 'pendiente' });
+                            alumno.estado_pago = 'pendiente';
+                            cambios++;
+                        }
+                    }
+                }
+            });
+            
+            if (cambios > 0) {
+                try { await batch.commit(); } catch (e) { console.error(e); }
+            }
+        }
+
+        function actualizarContadoresSucursales() {
+            const c = { apizaco: 0, santa_ana: 0, zacatelco: 0, san_martin: 0 };
+            alumnos.forEach(a => { if (c[a.sucursal] !== undefined) c[a.sucursal]++; });
+            Object.keys(c).forEach(s => {
+                const el = document.getElementById(`count-${s}`);
+                if (el) el.textContent = `${c[s]} alumno${c[s] !== 1 ? 's' : ''}`;
+            });
+        }
+
+        function filtrarPorSucursal(sucursal) {
+            filtroSucursal = (filtroSucursal === sucursal) ? null : sucursal;
+            document.querySelectorAll('.sucursal-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-sucursal') === filtroSucursal);
+            });
+            aplicarFiltros();
+        }
+
+        function aplicarFiltros() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filtrados = alumnos;
+            
+            if (filtroSucursal) filtrados = filtrados.filter(a => a.sucursal === filtroSucursal);
+            if (searchTerm) filtrados = filtrados.filter(a => (a.nombre || '').toLowerCase().includes(searchTerm));
+            
+            const filterInfo = document.getElementById('filterInfo');
+            if (filtroSucursal) {
+                filterInfo.style.display = 'flex';
+                document.getElementById('filterText').textContent = `📍 Sucursal: ${sucursalesNombres[filtroSucursal]}`;
+            } else {
+                filterInfo.style.display = 'none';
+            }
+            
+            document.getElementById('totalCount').textContent = filtrados.length;
+            renderizarAlumnos(filtrados);
+        }
+
+        function limpiarFiltros() {
+            filtroSucursal = null;
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.sucursal-btn').forEach(btn => btn.classList.remove('active'));
+            aplicarFiltros();
+        }
+
+        function renderizarAlumnos(lista) {
+            const contenedor = document.getElementById('alumnosList');
+            
+            if (lista.length === 0) {
+                contenedor.innerHTML = `<div class="empty-state"><div>📚</div><p>No hay alumnos que coincidan</p></div>`;
+                return;
+            }
+            
+            let html = '';
+            lista.forEach(alumno => {
+                const fecha = alumno.fecha_creacion ? formatearFecha(alumno.fecha_creacion) : 'N/D';
+                const suspendido = alumno.estado === 'suspendido';
+                const suspendidoPago = alumno.estado_pago === 'suspendido_pago';
+                const atrasado = alumno.estado_pago === 'atrasado';
+                const alDia = alumno.estado_pago === 'al_dia';
+                const tel = alumno.telefono ? `📱 ${alumno.telefono}` : '';
+                const contestadas = alumno._contestadas || 0;
+                const totalPagos = alumno._totalPagos || 0;
+                
+                let claseCard = '';
+                if (suspendido) claseCard = 'suspendido';
+                if (suspendidoPago) claseCard = 'suspendido-pago';
+                
+                let badgePago = '';
+                if (suspendidoPago) badgePago = '<span class="badge-suspendido-pago">💰 SUSPENDIDO POR PAGO</span>';
+                else if (atrasado) badgePago = '<span class="badge-pago-atrasado">💰 ATRASADO</span>';
+                else if (alDia) badgePago = '<span class="badge-pago-aldia">💰 AL DÍA</span>';
+                
+                html += `
+                    <div class="alumno-card ${claseCard}">
+                        <div class="alumno-info">
+                            <div class="alumno-nombre">
+                                ${alumno.nombre || 'Sin nombre'}
+                                ${suspendido ? '<span class="badge-suspendido">SUSPENDIDO</span>' : ''}
+                                ${badgePago}
+                            </div>
+                            <div class="alumno-details">
+                                <span>📚 ${alumno.programa_nombre || programasNombres[alumno.programa] || 'N/D'}</span>
+                                <span>🏢 ${alumno.sucursal_nombre || sucursalesNombres[alumno.sucursal] || 'N/D'}</span>
+                                ${tel ? `<span>${tel}</span>` : ''}
+                                <span>📝 ${contestadas} contestada${contestadas !== 1 ? 's' : ''}</span>
+                                <span>💵 ${totalPagos} pago${totalPagos !== 1 ? 's' : ''}</span>
+                                <span>📅 ${fecha}</span>
+                            </div>
+                        </div>
+                        <div class="alumno-actions">
+                            <button class="action-btn ver-pass-btn" onclick="verPassword('${alumno.id}')" title="Ver contraseña">🔑</button>
+                            <button class="action-btn edit-btn" onclick="editarAlumno('${alumno.id}')" title="Editar">✏️</button>
+                            <button class="action-btn reset-btn" onclick="abrirModalReset('${alumno.id}')" title="Resetear">🧹</button>
+                            <button class="action-btn ${suspendido ? 'reactivar-btn' : 'suspend-btn'}" onclick="abrirModalSuspender('${alumno.id}')">
+                                ${suspendido ? '✅ Reactivar' : '⏸️ Suspender'}
+                            </button>
+                            <button class="action-btn delete-btn" onclick="abrirModalEliminar('${alumno.id}')" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            contenedor.innerHTML = html;
+        }
+
+        // ==================== PAGOS ====================
+        function cargarPagos() {
+            document.getElementById('pagosContainer').innerHTML = `<div class="empty-tabla"><div class="icono">⏳</div><p>Cargando pagos...</p></div>`;
+            
+            db.collection("pagos").get()
+                .then(snapshot => {
+                    pagos = [];
+                    snapshot.forEach(doc => pagos.push({ id: doc.id, ...doc.data() }));
+                    actualizarStatsPagos();
+                    actualizarInfoSemana();
+                    aplicarFiltrosPagos();
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('pagosContainer').innerHTML = `<div class="empty-tabla"><div class="icono">❌</div><p>Error: ${error.message}</p></div>`;
+                });
+        }
+
+        function actualizarInfoSemana() {
+            const hoy = new Date();
+            const semanaActual = obtenerSemanaISO(hoy);
+            const diaSemana = obtenerDiaSemana();
+            const lunes = obtenerLunes(hoy);
+            const miercoles = new Date(lunes); miercoles.setDate(miercoles.getDate() + 2);
+            
+            let info = `
+                <span>📅 <strong>Semana ${semanaActual}</strong> · Límite de pago: <strong>Miércoles ${formatearFecha(miercoles)}</strong></span>
+            `;
+            
+            if (diaSemana >= 1 && diaSemana <= 3) {
+                info += `<span style="color: #198754; font-weight: 600;">🟢 Hoy están a tiempo de pagar</span>`;
+            } else {
+                info += `<span style="color: #dc3545; font-weight: 600;">🔴 Plazo vencido esta semana</span>`;
+            }
+            
+            document.getElementById('pagoSemanaInfo').innerHTML = info;
+        }
+
+        function actualizarStatsPagos() {
+            document.getElementById('statTotalAlumnos').textContent = alumnos.length;
+            
+            let alDia = 0, atrasados = 0, suspendidosPago = 0;
+            alumnos.forEach(a => {
+                if (a.estado_pago === 'al_dia') alDia++;
+                else if (a.estado_pago === 'atrasado') atrasados++;
+                else if (a.estado_pago === 'suspendido_pago') suspendidosPago++;
+            });
+            
+            document.getElementById('statAlDia').textContent = alDia;
+            document.getElementById('statAtrasados').textContent = atrasados;
+            document.getElementById('statSuspendidosPago').textContent = suspendidosPago;
+        }
+
+        function aplicarFiltrosPagos() {
+            const search = document.getElementById('pagoSearch').value.toLowerCase().trim();
+            const sucursal = document.getElementById('pagoSucursal').value;
+            const programa = document.getElementById('pagoPrograma').value;
+            const estatus = document.getElementById('pagoEstatus').value;
+            
+            let filtrados = alumnos;
+            
+            if (search) filtrados = filtrados.filter(a => (a.nombre || '').toLowerCase().includes(search));
+            if (sucursal) filtrados = filtrados.filter(a => a.sucursal === sucursal);
+            if (programa) filtrados = filtrados.filter(a => a.programa === programa);
+            if (estatus) filtrados = filtrados.filter(a => a.estado_pago === estatus);
+            
+            document.getElementById('pagosInfo').textContent = `💰 ${filtrados.length} alumno${filtrados.length !== 1 ? 's' : ''}`;
+            
+            renderizarPagos(filtrados);
+        }
+
+        function renderizarPagos(lista) {
+            const contenedor = document.getElementById('pagosContainer');
+            
+            if (lista.length === 0) {
+                contenedor.innerHTML = `<div class="empty-tabla"><div class="icono">💰</div><p>No hay alumnos que coincidan con los filtros</p></div>`;
+                return;
+            }
+            
+            const orden = { suspendido_pago: 0, atrasado: 1, pendiente: 2, al_dia: 3 };
+            lista.sort((a, b) => (orden[a.estado_pago] ?? 4) - (orden[b.estado_pago] ?? 4));
+            
+            let html = '';
+            lista.forEach(alumno => {
+                const estado = alumno.estado_pago || 'pendiente';
+                const suspendido = estado === 'suspendido_pago';
+                const atrasado = estado === 'atrasado';
+                const alDia = estado === 'al_dia';
+                const totalPagos = alumno._totalPagos || 0;
+                
+                let claseCard = 'al-dia';
+                let badgeClass = 'badge-aldia';
+                let badgeText = '🟢 AL DÍA';
+                
+                if (suspendido) {
+                    claseCard = 'suspendido';
+                    badgeClass = 'badge-suspendido-pago';
+                    badgeText = '🔴 SUSPENDIDO';
+                } else if (atrasado) {
+                    claseCard = 'atrasado';
+                    badgeClass = 'badge-atrasado';
+                    badgeText = '🟡 ATRASADO';
+                } else if (!alDia) {
+                    claseCard = '';
+                    badgeClass = 'badge-atrasado';
+                    badgeText = '⏳ PENDIENTE';
+                }
+                
+                const ultimoPago = alumno.fecha_ultimo_pago ? formatearFecha(alumno.fecha_ultimo_pago) : 'Nunca';
+                const proximoPago = alumno.fecha_proximo_pago ? formatearFecha(alumno.fecha_proximo_pago) : 'N/D';
+                const colegiatura = alumno.colegiatura_semanal || colegiaturas[alumno.programa] || 0;
+                
+                html += `
+                    <div class="pago-alumno-card ${claseCard}">
+                        <div class="pago-alumno-info">
+                            <div class="pago-alumno-nombre">
+                                ${alumno.nombre || 'Sin nombre'}
+                                ${totalPagos > 0 ? `<span class="badge-total-pagos">💵 ${totalPagos} pago${totalPagos !== 1 ? 's' : ''}</span>` : '<span class="badge-total-pagos" style="background: #6c757d;">Sin pagos</span>'}
+                            </div>
+                            <div class="pago-alumno-detalles">
+                                <span>🏢 ${alumno.sucursal_nombre || sucursalesNombres[alumno.sucursal] || 'N/D'}</span>
+                                <span>📚 ${alumno.programa_nombre || programasNombres[alumno.programa] || 'N/D'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pago-montos">
+                            <div class="monto-item">
+                                <span class="monto-label">Colegiatura:</span>
+                                <span class="monto-valor">$${colegiatura}</span>
+                            </div>
+                            <div class="monto-item">
+                                <span class="monto-label">Último pago:</span>
+                                <span class="monto-valor">${ultimoPago}</span>
+                            </div>
+                            <div class="monto-item">
+                                <span class="monto-label">Próximo pago:</span>
+                                <span class="monto-valor">${proximoPago}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pago-estado">
+                            <span class="badge-estado ${badgeClass}">${badgeText}</span>
+                        </div>
+                        
+                        <div class="pago-acciones">
+                            <button class="action-btn cobrar-btn" onclick="abrirModalCobrar('${alumno.id}')" title="Registrar pago">💵 Cobrar</button>
+                            <button class="action-btn historial-btn" onclick="abrirHistorial('${alumno.id}')" title="Ver historial">📋 Historial</button>
+                            ${suspendido ? `
+                                <button class="action-btn desbloquear-btn" onclick="desbloquearPorPago('${alumno.id}')" title="Desbloquear">🔓 Desbloquear</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            contenedor.innerHTML = html;
+        }
+
+        // ==================== COBRAR PAGO ====================
+        function abrirModalCobrar(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            
+            alumnoACobrar = id;
+            const monto = alumno.colegiatura_semanal || colegiaturas[alumno.programa] || 0;
+            
+            document.getElementById('cobrarNombre').textContent = alumno.nombre;
+            document.getElementById('cobrarMontoSugerido').textContent = '$' + monto;
+            document.getElementById('cobrarMonto').value = monto;
+            document.getElementById('cobrarMetodo').value = 'efectivo';
+            document.getElementById('cobrarNotas').value = '';
+            
+            document.getElementById('cobrarModal').style.display = 'flex';
+        }
+
+        function cerrarModalCobrar() {
+            document.getElementById('cobrarModal').style.display = 'none';
+            alumnoACobrar = null;
+        }
+
+        async function confirmarCobrar() {
+            if (!alumnoACobrar) return;
+            
+            const alumno = alumnos.find(a => a.id === alumnoACobrar);
+            if (!alumno) return;
+            
+            const monto = parseFloat(document.getElementById('cobrarMonto').value);
+            const metodo = document.getElementById('cobrarMetodo').value;
+            const notas = document.getElementById('cobrarNotas').value.trim();
+            
+            if (!monto || monto <= 0) {
+                alert("Por favor ingresa un monto válido");
+                return;
+            }
+            
+            const hoy = new Date();
+            const semanaActual = obtenerSemanaISO(hoy);
+            const proximoLunes = new Date(obtenerLunes(hoy));
+            proximoLunes.setDate(proximoLunes.getDate() + 7);
+            
+            try {
+                await db.collection("pagos").add({
+                    alumnoId: alumno.id,
+                    alumnoNombre: alumno.nombre,
+                    sucursal: alumno.sucursal,
+                    sucursalNombre: alumno.sucursal_nombre || sucursalesNombres[alumno.sucursal],
+                    programa: alumno.programa,
+                    programaNombre: alumno.programa_nombre || programasNombres[alumno.programa],
+                    monto: monto,
+                    metodo: metodo,
+                    notas: notas,
+                    semana: semanaActual,
+                    fecha_pago: hoy.toISOString()
+                });
+                
+                await db.collection("alumnos").doc(alumno.id).update({
+                    fecha_ultimo_pago: hoy.toISOString(),
+                    fecha_proximo_pago: proximoLunes.toISOString(),
+                    semana_ultimo_pago: semanaActual,
+                    estado_pago: 'al_dia'
+                });
+                
+                cerrarModalCobrar();
+                cargarAlumnos();
+                cargarPagos();
+                mostrarAlerta('success', `💵 Pago de $${monto} registrado para ${alumno.nombre}`);
+                
+            } catch (error) {
+                console.error("Error al registrar pago:", error);
+                alert("Error al registrar pago: " + error.message);
+            }
+        }
+
+        // ==================== HISTORIAL DE PAGOS ====================
+        function abrirHistorial(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            
+            document.getElementById('historialNombre').textContent = alumno.nombre;
+            document.getElementById('historialContenido').innerHTML = '<p style="text-align: center; color: var(--gray);">Cargando historial...</p>';
+            document.getElementById('historialModal').style.display = 'flex';
+            
+            db.collection("pagos")
+                .where("alumnoId", "==", id)
+                .get()
+                .then(snapshot => {
+                    const lista = [];
+                    snapshot.forEach(doc => lista.push({ id: doc.id, ...doc.data() }));
+                    
+                    lista.sort((a, b) => {
+                        const fa = a.fecha_pago || '';
+                        const fb = b.fecha_pago || '';
+                        return fb.localeCompare(fa);
+                    });
+                    
+                    if (lista.length === 0) {
+                        document.getElementById('historialContenido').innerHTML = 
+                            '<p style="text-align: center; padding: 30px; color: var(--gray);">📭 No hay pagos registrados</p>';
+                        return;
+                    }
+                    
+                    const total = lista.reduce((sum, p) => sum + (p.monto || 0), 0);
+                    
+                    let html = `
+                        <div style="background: linear-gradient(135deg, #198754, #20c997); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <span style="font-size: 14px;">Total de pagos: <strong>${lista.length}</strong></span>
+                            <span style="font-size: 20px; font-weight: 700;">$${total.toLocaleString('es-MX')} acumulado</span>
+                        </div>
+                    `;
+                    
+                    lista.forEach(p => {
+                        const fecha = p.fecha_pago ? new Date(p.fecha_pago).toLocaleString('es-MX', {
+                            day: '2-digit', month: 'short', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        }) : 'N/D';
+                        
+                        const metodos = { efectivo: '💵 Efectivo', transferencia: '🏦 Transferencia', deposito: '📥 Depósito', otro: '📌 Otro' };
+                        const metodo = metodos[p.metodo] || p.metodo || '';
+                        
+                        html += `
+                            <div class="pago-hist-item">
+                                <div>
+                                    <div class="pago-hist-fecha">${fecha}</div>
+                                    <div class="pago-hist-info">${metodo}${p.notas ? ' · ' + p.notas : ''}</div>
+                                </div>
+                                <div class="pago-hist-monto">$${(p.monto || 0).toLocaleString('es-MX')}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('historialContenido').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('historialContenido').innerHTML = 
+                        `<p style="color: #dc3545; text-align: center;">Error: ${error.message}</p>`;
+                });
+        }
+
+        function cerrarModalHistorial() {
+            document.getElementById('historialModal').style.display = 'none';
+        }
+
+        // ==================== DESBLOQUEAR POR PAGO ====================
+        function desbloquearPorPago(id) {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+            
+            if (!confirm(`¿Desbloquear a ${alumno.nombre}?\n\nEsto le devolverá el acceso al login. Asegúrate de haber registrado su pago.`)) return;
+            
+            db.collection("alumnos").doc(id).update({
+                estado: 'activo',
+                estado_pago: 'al_dia'
+            }).then(() => {
+                cargarAlumnos();
+                cargarPagos();
+                mostrarAlerta('success', `✅ ${alumno.nombre} desbloqueado`);
+            }).catch(error => {
+                console.error(error);
+                alert("Error: " + error.message);
+            });
+        }
+
+        // ==================== CALIFICACIONES ====================
+        function cargarCalificaciones() {
+            document.getElementById('califContainer').innerHTML = `<div class="empty-tabla"><div class="icono">⏳</div><p>Cargando...</p></div>`;
+            
+            db.collection("respuestas").get()
+                .then(snapshot => {
+                    calificaciones = [];
+                    snapshot.forEach(doc => calificaciones.push({ id: doc.id, ...doc.data() }));
+                    actualizarStats();
+                    aplicarFiltrosCalif();
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('califContainer').innerHTML = `<div class="empty-tabla"><div class="icono">❌</div><p>Error: ${error.message}</p></div>`;
+                });
+        }
+
+        function actualizarStats() {
+            const total = calificaciones.length;
+            
+            if (total === 0) {
+                document.getElementById('statPromedio').textContent = '0%';
+                document.getElementById('statAlumnosActivos').textContent = '0';
+                document.getElementById('statAciertos').textContent = '0';
+                return;
+            }
+            
+            const sumaPct = calificaciones.reduce((sum, c) => sum + (c.porcentaje || 0), 0);
+            document.getElementById('statPromedio').textContent = (sumaPct / total).toFixed(1) + '%';
+            document.getElementById('statAlumnosActivos').textContent = new Set(calificaciones.map(c => c.alumnoId)).size;
+            document.getElementById('statAciertos').textContent = calificaciones.reduce((sum, c) => sum + (c.aciertos || 0), 0);
+        }
+
+        function aplicarFiltrosCalif() {
+            const search = document.getElementById('califSearch').value.toLowerCase().trim();
+            const sucursal = document.getElementById('califSucursal').value;
+            const programa = document.getElementById('califPrograma').value;
+            const materia = document.getElementById('califMateria').value;
+            
+            let filtradas = calificaciones;
+            if (search) filtradas = filtradas.filter(c => (c.alumnoNombre || '').toLowerCase().includes(search));
+            if (sucursal) filtradas = filtradas.filter(c => c.sucursal === sucursal);
+            if (programa) filtradas = filtradas.filter(c => c.programa === programa);
+            if (materia) filtradas = filtradas.filter(c => c.materia === materia);
+            
+            if (vistaActual === 'alumno') renderizarVistaAlumno(filtradas);
+            else renderizarVistaActividad(filtradas);
+        }
+
+        function renderizarVistaAlumno(lista) {
+            const contenedor = document.getElementById('califContainer');
+            
+            if (lista.length === 0) {
+                contenedor.innerHTML = `<div class="empty-tabla"><div class="icono">📊</div><p>No hay calificaciones</p></div>`;
+                return;
+            }
+            
+            const agrupados = {};
+            lista.forEach(c => {
+                const key = c.alumnoId;
+                if (!agrupados[key]) {
+                    agrupados[key] = {
+                        alumnoId: c.alumnoId,
+                        alumnoNombre: c.alumnoNombre || 'N/D',
+                        sucursal: c.sucursal,
+                        sucursalNombre: c.sucursalNombre,
+                        programa: c.programa,
+                        respuestas: []
+                    };
+                }
+                agrupados[key].respuestas.push(c);
+            });
+            
+            const arr = Object.values(agrupados).sort((a, b) => (a.alumnoNombre || '').localeCompare(b.alumnoNombre || ''));
+            
+            let html = `
+                <table class="calificaciones-tabla">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Sucursal</th>
+                            <th>Programa</th>
+                            <th>Actividades</th>
+                            <th>Promedio</th>
+                            <th>Progreso</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            arr.forEach(alumno => {
+                const total = alumno.respuestas.length;
+                const promedio = alumno.respuestas.reduce((s, r) => s + (r.porcentaje || 0), 0) / total;
+                
+                let notaClass = 'nota-baja';
+                if (promedio >= 90) notaClass = 'nota-excelente';
+                else if (promedio >= 70) notaClass = 'nota-buena';
+                else if (promedio >= 50) notaClass = 'nota-regular';
+                
+                const totalPosibles = { prep_4: 17, prep_6: 26, prep_8: 34 }[alumno.programa] || total;
+                const progresoPct = (total / totalPosibles) * 100;
+                
+                let progresoColor = '#dc3545';
+                if (progresoPct >= 90) progresoColor = '#198754';
+                else if (progresoPct >= 70) progresoColor = '#0dcaf0';
+                else if (progresoPct >= 40) progresoColor = '#ffc107';
+                
+                const expandido = alumnosExpandidos.has(alumno.alumnoId);
+                
+                html += `
+                    <tr class="alumno-row ${expandido ? 'expandido' : ''}" onclick="toggleExpandir('${alumno.alumnoId}')">
+                        <td>
+                            <div class="alumno-cell">
+                                <span class="expandir-icon">${expandido ? '▼' : '▶'}</span>
+                                <strong>${alumno.alumnoNombre}</strong>
+                            </div>
+                        </td>
+                        <td>${sucursalesNombres[alumno.sucursal] || alumno.sucursalNombre || 'N/D'}</td>
+                        <td>${programasNombres[alumno.programa] || alumno.programa || 'N/D'}</td>
+                        <td><span class="badge-actividades">${total} contestadas</span></td>
+                        <td><span class="nota-badge ${notaClass}">${promedio.toFixed(1)}%</span></td>
+                        <td>
+                            <div class="progreso-mini">
+                                <div class="progreso-mini-bar">
+                                    <div class="progreso-mini-fill" style="width: ${progresoPct}%; background-color: ${progresoColor};"></div>
+                                </div>
+                                <span class="progreso-mini-text">${total}/${totalPosibles}</span>
+                            </div>
+                        </td>
+                        <td><button class="btn-detalle" onclick="event.stopPropagation(); toggleExpandir('${alumno.alumnoId}')">${expandido ? 'Ocultar' : 'Ver'}</button></td>
+                    </tr>
+                `;
+                
+                if (expandido) {
+                    html += `<tr class="detalle-row"><td colspan="7"><div class="detalle-contenido">
+                        <div class="detalle-titulo-mini">📚 Actividades de ${alumno.alumnoNombre}</div>
+                        <div class="actividades-lista-mini">`;
+                    
+                    alumno.respuestas.sort((a, b) => (a.materia || '').localeCompare(b.materia || ''));
+                    
+                    alumno.respuestas.forEach(r => {
+                        const pct = r.porcentaje || 0;
+                        let cm = 'baja';
+                        if (pct >= 90) cm = 'excelente';
+                        else if (pct >= 70) cm = 'buena';
+                        else if (pct >= 50) cm = 'regular';
+                        
+                        html += `
+                            <div class="actividad-mini ${cm}">
+                                <div class="actividad-mini-titulo">${r.actividadTitulo || 'N/D'}</div>
+                                <div class="actividad-mini-materia">${materiasIconos[r.materia] || r.materia || 'N/D'}</div>
+                                <div class="actividad-mini-nota">
+                                    <span class="aciertos">${r.aciertos}/${r.total}</span>
+                                    <span class="pct">${pct.toFixed(0)}%</span>
+                                </div>
+                                <div class="actividad-mini-fecha">📅 ${r.fecha_envio ? formatearFecha(r.fecha_envio) : 'N/D'}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div></div></td></tr>`;
+                }
+            });
+            
+            html += `</tbody></table>`;
+            contenedor.innerHTML = html;
+        }
+
+        function toggleExpandir(alumnoId) {
+            if (alumnosExpandidos.has(alumnoId)) alumnosExpandidos.delete(alumnoId);
+            else alumnosExpandidos.add(alumnoId);
+            aplicarFiltrosCalif();
+        }
+
+        function renderizarVistaActividad(lista) {
+            const contenedor = document.getElementById('califContainer');
+            
+            if (lista.length === 0) {
+                contenedor.innerHTML = `<div class="empty-tabla"><div class="icono">📊</div><p>No hay calificaciones</p></div>`;
+                return;
+            }
+            
+            lista.sort((a, b) => (b.fecha_envio || '').localeCompare(a.fecha_envio || ''));
+            
+            let html = `<table class="calificaciones-tabla"><thead><tr>
+                <th>Alumno</th><th>Sucursal</th><th>Programa</th><th>Materia</th>
+                <th>Actividad</th><th>Aciertos</th><th>Calificación</th><th>Fecha</th>
+            </tr></thead><tbody>`;
+            
+            lista.forEach(c => {
+                const pct = c.porcentaje || 0;
+                let nc = 'nota-baja';
+                if (pct >= 90) nc = 'nota-excelente';
+                else if (pct >= 70) nc = 'nota-buena';
+                else if (pct >= 50) nc = 'nota-regular';
+                
+                html += `<tr>
+                    <td><strong>${c.alumnoNombre || 'N/D'}</strong></td>
+                    <td>${sucursalesNombres[c.sucursal] || c.sucursalNombre || 'N/D'}</td>
+                    <td>${programasNombres[c.programa] || c.programa || 'N/D'}</td>
+                    <td><span class="materia-tag">${materiasIconos[c.materia] || c.materia || 'N/D'}</span></td>
+                    <td>${c.actividadTitulo || 'N/D'}</td>
+                    <td><strong>${c.aciertos}/${c.total}</strong></td>
+                    <td><span class="nota-badge ${nc}">${pct.toFixed(0)}%</span></td>
+                    <td>${c.fecha_envio ? formatearFecha(c.fecha_envio) : 'N/D'}</td>
+                </tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            contenedor.innerHTML = html;
+        }
+
+        // ==================== INICIO ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarAlumnos();
+            
+            ['deleteModal', 'suspendModal', 'resetModal', 'passwordModal', 'cobrarModal', 'historialModal'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            if (id === 'deleteModal') cerrarModalEliminar();
+                            if (id === 'suspendModal') cerrarModalSuspender();
+                            if (id === 'resetModal') cerrarModalReset();
+                            if (id === 'passwordModal') cerrarModalPassword();
+                            if (id === 'cobrarModal') cerrarModalCobrar();
+                            if (id === 'historialModal') cerrarModalHistorial();
+                        }
+                    });
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    cerrarModalEliminar(); cerrarModalSuspender(); cerrarModalReset();
+                    cerrarModalPassword(); cerrarModalCobrar(); cerrarModalHistorial();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
